@@ -11,7 +11,7 @@ spec:
         - ${K8S_HOSTNAME}
       secretName: ${K8S_SECRETNAME}
   rules:
-    - host: dmd.${K8S_HOSTNAME}
+    - host: ${K8S_HOSTNAME}
       http:
         paths:
           - path: /
