@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: dmd-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
+    ${K8S_INGRESS_ANNOTATIONS}
+spec:
+  tls:
+    - hosts:
+        - ${K8S_HOSTNAME}
+      secretName: ${K8S_SECRETNAME}
+  rules:
+    - host: dmd.${K8S_HOSTNAME}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: data-dashboard
+                port:
+                  number: 8080

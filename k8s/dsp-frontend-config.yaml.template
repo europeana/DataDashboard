@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dsp-frontend-config
+data:
+  edc-connector-config.json: |-
+    [
+      {
+        "connectorName": "Consumer",
+        "managementUrl": "http://${CONSUMER_CP_HOST}/api/mgmt",
+        "defaultUrl": "http://${CONSUMER_CP_HOST}/api",
+        "protocolUrl": "http://${CONSUMER_CP_HOST}/api/dsp/2025-1",
+        "federatedCatalogEnabled": false,
+        "federatedCatalogUrl": "http://fc-${CONSUMER_CP_HOST}/catalog",
+        "did": "did:web:identityhub.consumer-${ENVIRONMENT}.svc.cluster.local%3A7083:consumer",
+        "apiToken":"password"
+      },
+      {
+        "connectorName": "Provider",
+        "managementUrl": "http://${PROVIDER_CP_HOST}/api/mgmt",
+        "defaultUrl": "http://${PROVIDER_CP_HOST}/api",
+        "protocolUrl": "http://${PROVIDER_CP_HOST}/api/dsp/2025-1",
+        "federatedCatalogEnabled": false,
+        "federatedCatalogUrl": "http://fc-${PROVIDER_CP_HOST}/catalog",
+        "did": "did:web:identityhub.provider-${ENVIRONMENT}.svc.cluster.local%3A7083:provider",
+        "apiToken":"password"
+      }
+    ] 
