@@ -6,6 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/force-ssl-redirect: "false"
     ${K8S_INGRESS_ANNOTATIONS}
 spec:
+  ingressClassName: public-iks-k8s-nginx
   tls:
     - hosts:
         - ${K8S_HOSTNAME}
