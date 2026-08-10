@@ -1,6 +1,12 @@
 {
   "healthCheckIntervalSeconds": 30,
   "enableUserConfig": false,
+  "appTitle": "EDC Dashboard",
+  "keycloak": {
+    "url": "https://keycloak.test.eanadev.org/auth",
+    "realm": "europeana",
+    "clientId": "edc-dashboard"
+  }, 
   "menuItems": [
     {
       "text": "Home",
