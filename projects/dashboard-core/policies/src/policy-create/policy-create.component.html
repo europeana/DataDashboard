@@ -79,6 +79,16 @@
         <span class="badge badge-info">Optional</span>
       </label>
     </fieldset>
+
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">Private Properties</legend>
+      <lib-json-object-input
+        [object]="privateProperties"
+        [excludeKeys]="['@context']"
+        (objectChange)="privateProperties = $event"
+      >
+      </lib-json-object-input>
+    </fieldset>
   </div>
 
   <div class="flex flex-col items-center">

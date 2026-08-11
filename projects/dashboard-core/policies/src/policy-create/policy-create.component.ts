@@ -16,7 +16,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angu
 import { NgClass } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PolicyService } from '../policy.service';
-import { AlertComponent } from '@eclipse-edc/dashboard-core';
+import { AlertComponent, JsonObjectInputComponent } from '@eclipse-edc/dashboard-core';
 import { PolicyType } from '@think-it-labs/edc-connector-client/dist/src/entities/policy/policy';
 import {
   compact,
@@ -27,11 +27,12 @@ import {
   PolicyDefinitionInput,
   PolicyInput,
 } from '@think-it-labs/edc-connector-client';
+import { JsonValue } from '@angular-devkit/core';
 
 @Component({
   selector: 'lib-policy-create',
   standalone: true,
-  imports: [ReactiveFormsModule, AlertComponent, NgClass],
+  imports: [ReactiveFormsModule, AlertComponent, NgClass, JsonObjectInputComponent],
   templateUrl: './policy-create.component.html',
   styleUrl: './policy-create.component.css',
 })
@@ -46,6 +47,8 @@ export class PolicyCreateComponent implements OnChanges {
   mode: 'create' | 'update' = 'create';
 
   errorMsg = '';
+
+  privateProperties: Record<string, JsonValue> = {};
 
   policyForm: FormGroup;
 
@@ -70,6 +73,13 @@ export class PolicyCreateComponent implements OnChanges {
     const { policy } = this.policyDefinition;
     const compactPolicy = await compact(policy);
     const typeSegments = compactPolicy['@type'].split('/');
+
+    const rawPolicy = this.policyDefinition as PolicyDefinition & { privateProperties?: unknown };
+    if (rawPolicy.privateProperties) {
+      this.privateProperties = (await compact(rawPolicy.privateProperties)) as Record<string, JsonValue>;
+    } else {
+      this.privateProperties = {};
+    }
 
     this.policyForm.patchValue({
       id: this.policyDefinition['@id'],
@@ -121,7 +131,10 @@ export class PolicyCreateComponent implements OnChanges {
       .raw(policyInput)
       .build();
 
-    const policyDefinitionInput: PolicyDefinitionInput = { policy };
+    const policyDefinitionInput: PolicyDefinitionInput & { privateProperties?: Record<string, JsonValue> } = { policy };
+    if (Object.keys(this.privateProperties ?? {}).length > 0) {
+      policyDefinitionInput.privateProperties = this.privateProperties;
+    }
     if (id) {
       policyDefinitionInput.id = id;
       policyDefinitionInput['@id'] = id;
