@@ -1,0 +1,9 @@
+volumes:
+  - name: config
+    configMap:
+      name: dsp-frontend-config
+volumeMounts:
+  - name: config
+    mountPath: /app/config/edc-connector-config.json
+    subPath: edc-connector-config.json
+    readOnly: true
