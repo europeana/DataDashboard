@@ -14,10 +14,17 @@
 
 import { MenuItem } from './menu-item';
 
+export interface KeycloakConfig {
+  url?: string;
+  realm?: string;
+  clientId?: string;
+}
+
 export interface AppConfig {
   menuItems: MenuItem[];
   healthCheckIntervalSeconds?: number; // Default: 30
   enableUserConfig?: boolean; // Default: true
   appTitle?: string; // Default 'EDC Dashboard'
   initialTheme?: string; // Default: undefined
+  keycloak?: KeycloakConfig;
 }
