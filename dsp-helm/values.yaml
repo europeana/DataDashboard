@@ -9,7 +9,7 @@ replicaCount: 1
 image:
   repository: europeana/dmd
   tag: main
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 
 # -- This is for setting pull secrets if private images are used.
 imagePullSecrets:

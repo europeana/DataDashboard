@@ -1,3 +1,9 @@
+config:
+  keycloak: 
+    url: "https://keycloak.test.eanadev.org/auth"
+    realm: "europeana"
+    clientId: "edc-dashboard"
+  
 volumes:
   - name: config
     configMap:
