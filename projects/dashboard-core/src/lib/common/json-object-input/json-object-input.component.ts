@@ -33,13 +33,28 @@ export class JsonObjectInputComponent {
     value: new FormControl('', Validators.required),
   });
 
+  get duplicateKey(): boolean {
+    const key = this.formGroup.value.key?.trim();
+    return !!key && this.hasKey(key);
+  }
+
   addProperty() {
-    if (this.formGroup.valid) {
-      const key = this.formGroup.value.key!;
-      const value = JsonObjectInputComponent.parseJson(this.formGroup.value.value!);
-      this.objectChange.emit({ ...this.object, [key]: value });
-      this.formGroup.reset();
+    if (!this.formGroup.valid || this.duplicateKey) {
+      return;
     }
+    const key = this.formGroup.value.key!.trim();
+    const value = JsonObjectInputComponent.parseJson(this.formGroup.value.value!);
+    this.objectChange.emit({ ...this.object, [key]: value });
+    this.formGroup.reset();
+  }
+
+  /**
+   * Returns true when `key` already exists on the current object.
+   * Comparison is case-insensitive so `Name` and `name` are treated as the same property.
+   */
+  private hasKey(key: string): boolean {
+    const lower = key.toLowerCase();
+    return Object.keys(this.object ?? {}).some(existing => existing.toLowerCase() === lower);
   }
 
   public static parseJson(input: string): JsonValue {

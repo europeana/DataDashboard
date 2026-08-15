@@ -81,6 +81,39 @@ export class AssetCreateComponent implements OnChanges {
     }
   }
 
+  get formTitle(): string {
+    if (!this.asset) {
+      return 'Asset';
+    }
+    const name = this.getAssetName();
+    return name || this.asset.id;
+  }
+
+  /**
+   * Get the display name of the asset currently being edited.
+   *
+   * Looks up `edc:name` on the original JSON-LD properties first, then the compacted
+   * `name` field after `compact()` has run. Empty or whitespace-only values are ignored.
+   *
+   * EDC APIs return properties with full namespace URLs.
+   * Compaction shortens those URLs into normal keys so the
+   * form can use properties['name'] instead of a long URI.
+   *
+   * @returns The trimmed name, or `undefined` when no usable name is present
+   *  so callers can fall back to the asset ID.
+   */
+  private getAssetName(): string | undefined {
+    const fromProperties = this.asset?.properties?.optionalValue<string>('edc', 'name');
+    if (typeof fromProperties === 'string' && fromProperties.trim()) {
+      return fromProperties.trim();
+    }
+    const fromCompact = this.properties['name'];
+    if (typeof fromCompact === 'string' && fromCompact.trim()) {
+      return fromCompact.trim();
+    }
+    return undefined;
+  }
+
   private async updateAssetAndSyncForm() {
     this.properties = await compact(this.asset!.properties);
     this.privateProperties = await compact(this.asset!.privateProperties);

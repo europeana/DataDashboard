@@ -74,12 +74,7 @@ export class PolicyCreateComponent implements OnChanges {
     const compactPolicy = await compact(policy);
     const typeSegments = compactPolicy['@type'].split('/');
 
-    const rawPolicy = this.policyDefinition as PolicyDefinition & { privateProperties?: unknown };
-    if (rawPolicy.privateProperties) {
-      this.privateProperties = (await compact(rawPolicy.privateProperties)) as Record<string, JsonValue>;
-    } else {
-      this.privateProperties = {};
-    }
+    this.privateProperties = await this.loadPrivateProperties();
 
     this.policyForm.patchValue({
       id: this.policyDefinition['@id'],
@@ -88,6 +83,36 @@ export class PolicyCreateComponent implements OnChanges {
       prohibitionsJson: await this.rulesToJson(policy.prohibitions),
       obligationsJson: await this.rulesToJson(policy.obligations),
     });
+  }
+
+  get formTitle(): string {
+    if (!this.policyDefinition) {
+      return 'Policy';
+    }
+    return this.getPolicyName() || this.policyDefinition.id;
+  }
+
+  /**
+   * Resolves the display name of the policy currently being edited.
+   *
+   * Checks `edc:name` on the policy definition first, then a `Name`/`name` entry
+   * in compacted private properties. Empty or whitespace-only values are ignored.
+   *
+   * @returns The trimmed name, or `undefined` so callers can fall back to the policy ID.
+   */
+  private getPolicyName(): string | undefined {
+    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', 'name');
+    if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
+      return fromDefinition.trim();
+    }
+
+    const fromPrivate = Object.entries(this.privateProperties ?? {}).find(
+      ([key, value]) => key.toLowerCase() === 'name' && typeof value === 'string' && value.trim(),
+    );
+    if (fromPrivate && typeof fromPrivate[1] === 'string') {
+      return fromPrivate[1].trim();
+    }
+    return undefined;
   }
 
   createPolicyDefinition(): void {
@@ -131,16 +156,39 @@ export class PolicyCreateComponent implements OnChanges {
       .raw(policyInput)
       .build();
 
-    const policyDefinitionInput: PolicyDefinitionInput & { privateProperties?: Record<string, JsonValue> } = { policy };
-    if (Object.keys(this.privateProperties ?? {}).length > 0) {
-      policyDefinitionInput.privateProperties = this.privateProperties;
-    }
+    const policyDefinitionInput: PolicyDefinitionInput & { privateProperties: Record<string, JsonValue> } = {
+      policy,
+      privateProperties: this.toPrivatePropertiesPayload(),
+    };
     if (id) {
       policyDefinitionInput.id = id;
       policyDefinitionInput['@id'] = id;
     }
 
     return policyDefinitionInput;
+  }
+
+  /**
+   * Loads private properties from the policy definition returned by the management API.
+   *
+   * `PolicyDefinition` has no `privateProperties` getter (unlike `Asset`), so the map lives
+   * on the expanded JSON-LD object under the EDC namespace. `nested('edc', 'privateProperties')`
+   * reads that field; `compact()` then shortens keys such as
+   * `https://w3id.org/edc/v0.0.1/ns/abc` to `abc` for the form table.
+   */
+  private async loadPrivateProperties(): Promise<Record<string, JsonValue>> {
+    const props = this.policyDefinition!.nested('edc', 'privateProperties');
+    return (await compact(props)) as Record<string, JsonValue>;
+  }
+
+  /**
+   * Builds the private-properties payload sent to the backend.
+   * JSON-LD metadata added by `compact()`.
+   * (`@context`, `@id`, `@type`) is omitted.
+   */
+  private toPrivatePropertiesPayload(): Record<string, JsonValue> {
+    const jsonLdKeys = new Set(['@context', '@id', '@type']);
+    return Object.fromEntries(Object.entries(this.privateProperties ?? {}).filter(([key]) => !jsonLdKeys.has(key)));
   }
 
   /** Compacts a list of rules to a JSON string, or returns an empty string when there are none. */
