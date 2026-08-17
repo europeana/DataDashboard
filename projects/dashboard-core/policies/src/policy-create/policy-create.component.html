@@ -61,23 +61,44 @@
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Properties</legend>
       <legend class="fieldset-label">Permissions</legend>
-      <label class="input flex items-center tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
-        <span class="material-symbols-rounded opacity-50">file_json</span>
-        <input type="text" class="grow" placeholder="Permissions" formControlName="permissionsJson" />
-        <span class="badge badge-info">Optional</span>
-      </label>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Permissions"
+          formControlName="permissionsJson"
+          rows="4"
+        ></textarea>
+      </div>
       <legend class="fieldset-label">Prohibitions</legend>
-      <label class="input flex items-center tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
-        <span class="material-symbols-rounded opacity-50">file_json</span>
-        <input type="text" class="grow" placeholder="Prohibitions" formControlName="prohibitionsJson" />
-        <span class="badge badge-info">Optional</span>
-      </label>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Prohibitions"
+          formControlName="prohibitionsJson"
+          rows="4"
+        ></textarea>
+      </div>
       <legend class="fieldset-label">Obligations</legend>
-      <label class="input flex items-center tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
-        <span class="material-symbols-rounded opacity-50">file_json</span>
-        <input type="text" class="grow" placeholder="Obligations" formControlName="obligationsJson" />
-        <span class="badge badge-info">Optional</span>
-      </label>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Obligations"
+          formControlName="obligationsJson"
+          rows="4"
+        ></textarea>
+      </div>
     </fieldset>
 
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">

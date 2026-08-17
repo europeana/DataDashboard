@@ -115,8 +115,8 @@ export class AssetCreateComponent implements OnChanges {
   }
 
   private async updateAssetAndSyncForm() {
-    this.properties = await compact(this.asset!.properties);
-    this.privateProperties = await compact(this.asset!.privateProperties);
+    this.properties = await this.assetService.compactForForm(this.asset!.properties);
+    this.privateProperties = await this.assetService.compactForForm(this.asset!.privateProperties);
     this.dataAddress = (await compact(this.asset!.dataAddress)) as unknown as BaseDataAddress;
     this.assetForm.get('id')?.setValue(this.asset!.id);
     this.assetForm.get('name')?.setValue(this.properties['name']);
