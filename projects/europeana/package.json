@@ -1,0 +1,14 @@
+{
+  "name": "@europeana/dashboard",
+  "version": "0.0.1",
+  "peerDependencies": {
+    "@angular/common": "^21.2.0",
+    "@angular/core": "^21.2.0",
+    "@eclipse-edc/dashboard-core": "0.5.0",
+    "@think-it-labs/edc-connector-client": "0.9.5"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "sideEffects": false
+}

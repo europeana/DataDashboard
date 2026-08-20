@@ -94,10 +94,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
-            "lintFilePatterns": [
-              "src/**/*.ts",
-              "src/**/*.html"
-            ]
+            "lintFilePatterns": ["src/**/*.ts", "src/**/*.html"]
           }
         },
         "cypress-run-e2e": {
@@ -199,6 +196,32 @@
               "projects/dashboard-core/**/*.html"
             ],
             "eslintConfig": "projects/dashboard-core/eslint.config.js"
+          }
+        }
+      }
+    },
+    "@europeana/dashboard": {
+      "projectType": "library",
+      "root": "projects/europeana",
+      "sourceRoot": "projects/europeana/src",
+      "prefix": "europeana",
+      "architect": {
+        "build": {
+          "builder": "@angular/build:ng-packagr",
+          "configurations": {
+            "production": {
+              "tsConfig": "projects/europeana/tsconfig.lib.prod.json"
+            },
+            "development": {
+              "tsConfig": "projects/europeana/tsconfig.lib.json"
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "test": {
+          "builder": "@angular/build:unit-test",
+          "options": {
+            "tsConfig": "projects/europeana/tsconfig.spec.json"
           }
         }
       }
