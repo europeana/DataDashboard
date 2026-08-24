@@ -13,4 +13,6 @@
  */
 
 export * from './src/contract-definitions-view/contract-definitions-view.component';
+export * from './src/contract-definition-create/contract-definition-create.component';
+export * from './src/contract-definition-card/contract-definition-card.component';
 export * from './src/contract-definitions.service';

@@ -50,7 +50,8 @@ import { JsonValue } from '@angular-devkit/core';
   styleUrl: './asset-create.component.css',
 })
 export class AssetCreateComponent implements OnChanges {
-  private readonly assetService = inject(AssetService);
+  /* CORE HACK : make variable 'assetService' protected */
+  protected readonly assetService = inject(AssetService);
   private readonly formBuilder = inject(FormBuilder);
 
   @Input() asset?: Asset;
@@ -81,7 +82,14 @@ export class AssetCreateComponent implements OnChanges {
     }
   }
 
-  private async updateAssetAndSyncForm() {
+  /* CORE HACK : hook method to add custom form title */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get formTitle(): string {
+    return 'Asset';
+  }
+
+  /* CORE HACK : make method protected */
+  protected async updateAssetAndSyncForm() {
     this.properties = await compact(this.asset!.properties);
     this.privateProperties = await compact(this.asset!.privateProperties);
     this.dataAddress = (await compact(this.asset!.dataAddress)) as unknown as BaseDataAddress;

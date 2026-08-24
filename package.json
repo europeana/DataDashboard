@@ -6,7 +6,9 @@
     "start": "ng serve",
     "lib-start": "ng build @eclipse-edc/dashboard-core --watch",
     "build": "ng build",
-    "lib-build": "ng build @eclipse-edc/dashboard-core",
+    "lib-build": "ng build @eclipse-edc/dashboard-core && ng build @europeana/dashboard",
+    "europeana-build": "ng build @europeana/dashboard",
+    "europeana-start": "ng build @europeana/dashboard --watch",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lib-test": "ng test --project @eclipse-edc/dashboard-core",
@@ -55,6 +57,7 @@
     "eslint-config-prettier": "^10.1.8",
     "husky": "^9.1.7",
     "jasmine-core": "~6.2.0",
+    "jsdom": "^28.0.0",
     "karma": "~6.4.4",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.1",
@@ -66,7 +69,8 @@
     "prettier": "^3.8.3",
     "tailwindcss": "^4.3.0",
     "typescript": "~5.9.3",
-    "typescript-eslint": "8.60.0"
+    "typescript-eslint": "8.60.0",
+    "vitest": "^4.0.8"
   },
   "lint-staged": {
     "src/**/*.{ts,js}": "eslint --cache --fix",

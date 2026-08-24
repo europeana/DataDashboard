@@ -37,8 +37,11 @@ import { AssetCardComponent } from '../asset-card/asset-card.component';
   styleUrl: './asset-view.component.css',
 })
 export class AssetViewComponent implements OnInit, OnDestroy {
-  private readonly assetService = inject(AssetService);
-  private readonly modalAndAlertService = inject(ModalAndAlertService);
+  /* CORE HACK : make 'assetService' protected */
+  protected readonly assetService = inject(AssetService);
+  /* CORE HACK : make 'modalAndAlertService' protected */
+  protected readonly modalAndAlertService = inject(ModalAndAlertService);
+
   private readonly stateService = inject(DashboardStateService);
 
   private readonly destroy$ = new Subject<void>();
@@ -135,7 +138,8 @@ export class AssetViewComponent implements OnInit, OnDestroy {
     this.modalAndAlertService.openModal(JsonldViewerComponent, { jsonLdObject: asset });
   }
 
-  private fetchAssets() {
+  /* CORE HACK : make method protected */
+  protected fetchAssets() {
     this.fetched = false;
     this.assets$ = this.filteredAssets$ = of([]);
     this.assets$ = this.filteredAssets$ = from(this.assetService.getAllAssets().finally(() => (this.fetched = true)));

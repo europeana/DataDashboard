@@ -26,16 +26,17 @@ export const routes: Routes = [
   },
   {
     path: 'assets',
-    loadComponent: () => import('@eclipse-edc/dashboard-core/assets').then(m => m.AssetViewComponent),
+    // loadComponent: () => import('@eclipse-edc/dashboard-core/assets').then(m => m.AssetViewComponent),
+    loadComponent: () => import('@europeana/dashboard').then(m => m.EuropeanaAssetViewComponent),
   },
   {
     path: 'policies',
-    loadComponent: () => import('@eclipse-edc/dashboard-core/policies').then(m => m.PolicyViewComponent),
+    //loadComponent: () => import('@eclipse-edc/dashboard-core/policies').then(m => m.PolicyViewComponent),
+    loadComponent: () => import('@europeana/dashboard').then(m => m.EuropeanaPolicyViewComponent),
   },
   {
     path: 'contract-definitions',
-    loadComponent: () =>
-      import('@eclipse-edc/dashboard-core/contract-definitions').then(m => m.ContractDefinitionsViewComponent),
+    loadComponent: () => import('@europeana/dashboard').then(m => m.EuropeanaContractDefinitionsViewComponent),
   },
   {
     path: 'contracts',

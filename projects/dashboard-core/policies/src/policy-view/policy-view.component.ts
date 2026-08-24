@@ -38,7 +38,8 @@ import { PolicyCardComponent } from '../policy-card/policy-card.component';
 })
 export class PolicyViewComponent implements OnInit, OnDestroy {
   policyService = inject(PolicyService);
-  private readonly modalAndAlertService = inject(ModalAndAlertService);
+  /* CORE HACK : make 'modalAndAlertService' protected */
+  protected readonly modalAndAlertService = inject(ModalAndAlertService);
   private readonly stateService = inject(DashboardStateService);
 
   private readonly destroy$ = new Subject<void>();
@@ -132,7 +133,8 @@ export class PolicyViewComponent implements OnInit, OnDestroy {
     );
   }
 
-  private fetchPolicies() {
+  /* CORE HACK : make method protected */
+  protected fetchPolicies() {
     this.fetched = false;
     this.policies$ = this.filteredPolicies$ = of([]);
     this.policies$ = this.filteredPolicies$ = from(

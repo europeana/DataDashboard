@@ -16,7 +16,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, inject } from '@angu
 import { NgClass } from '@angular/common';
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { PolicyService } from '../policy.service';
-import { AlertComponent } from '@eclipse-edc/dashboard-core';
+import { AlertComponent, JsonObjectInputComponent } from '@eclipse-edc/dashboard-core';
 import { PolicyType } from '@think-it-labs/edc-connector-client/dist/src/entities/policy/policy';
 import {
   compact,
@@ -27,11 +27,12 @@ import {
   PolicyDefinitionInput,
   PolicyInput,
 } from '@think-it-labs/edc-connector-client';
+import { JsonValue } from '@angular-devkit/core';
 
 @Component({
   selector: 'lib-policy-create',
   standalone: true,
-  imports: [ReactiveFormsModule, AlertComponent, NgClass],
+  imports: [ReactiveFormsModule, AlertComponent, NgClass, JsonObjectInputComponent],
   templateUrl: './policy-create.component.html',
   styleUrl: './policy-create.component.css',
 })
@@ -46,6 +47,8 @@ export class PolicyCreateComponent implements OnChanges {
   mode: 'create' | 'update' = 'create';
 
   errorMsg = '';
+
+  privateProperties: Record<string, JsonValue> = {};
 
   policyForm: FormGroup;
 
@@ -70,7 +73,6 @@ export class PolicyCreateComponent implements OnChanges {
     const { policy } = this.policyDefinition;
     const compactPolicy = await compact(policy);
     const typeSegments = compactPolicy['@type'].split('/');
-
     this.policyForm.patchValue({
       id: this.policyDefinition['@id'],
       policyType: typeSegments[typeSegments.length - 1] as PolicyType,
@@ -78,6 +80,12 @@ export class PolicyCreateComponent implements OnChanges {
       prohibitionsJson: await this.rulesToJson(policy.prohibitions),
       obligationsJson: await this.rulesToJson(policy.obligations),
     });
+  }
+
+  /* CORE HACK : hook method */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get formTitle(): string {
+    return 'Policy';
   }
 
   createPolicyDefinition(): void {
@@ -108,7 +116,8 @@ export class PolicyCreateComponent implements OnChanges {
     });
   }
 
-  private createPolicyInput(): PolicyDefinitionInput {
+  /* CORE HACK : make method protected */
+  protected createPolicyInput(): PolicyDefinitionInput {
     const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson } = this.policyForm.value;
 
     const policyInput: PolicyInput = { '@type': policyType };

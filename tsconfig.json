@@ -6,7 +6,8 @@
     "baseUrl": "./",
     "paths": {
       "@eclipse-edc/dashboard-core": ["./dist/@eclipse-edc/dashboard-core"],
-      "@eclipse-edc/dashboard-core/*": ["./dist/@eclipse-edc/dashboard-core/*"]
+      "@eclipse-edc/dashboard-core/*": ["./dist/@eclipse-edc/dashboard-core/*"],
+      "@europeana/dashboard": ["./dist/@europeana/dashboard"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,
@@ -31,5 +32,13 @@
     "strictInjectionParameters": true,
     "strictInputAccessModifiers": true,
     "strictTemplates": true
-  }
+  },
+  "references": [
+    {
+      "path": "./projects/europeana/tsconfig.lib.json"
+    },
+    {
+      "path": "./projects/europeana/tsconfig.spec.json"
+    }
+  ]
 }
