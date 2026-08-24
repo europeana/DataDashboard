@@ -19,6 +19,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: data-dashboard
+                name: dsp-dmd
                 port:
                   number: 8080

@@ -1,0 +1,15 @@
+config:
+  keycloak: 
+    url: "$KEYCLOAK_URL"
+    realm: "europeana"
+    clientId: "$CLIENT_ID"
+  
+volumes:
+  - name: config
+    configMap:
+      name: dsp-frontend-config
+volumeMounts:
+  - name: config
+    mountPath: /app/config/edc-connector-config.json
+    subPath: edc-connector-config.json
+    readOnly: true

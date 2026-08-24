@@ -22,11 +22,13 @@ import {
 import { provideRouter } from '@angular/router';
 
 import { routes } from './app.routes';
-import { HttpClient, provideHttpClient } from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { APP_BASE_HREF } from '@angular/common';
+import { AuthService } from './auth/auth.service';
 import { provideEuropeanaDashboard } from '@europeana/dashboard';
 
+import { authInterceptor } from './auth/auth.interceptor';
 @Injectable({
   providedIn: 'root',
 })
@@ -54,9 +56,10 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(),
-    ...provideEuropeanaDashboard(),
+    provideHttpClient(withInterceptors([authInterceptor])),
     provideAppInitializer(() => inject(BaseHrefService).load()),
+    provideAppInitializer(() => inject(AuthService).init()),
+
     {
       provide: APP_BASE_HREF,
       useFactory: (svc: BaseHrefService) => svc.get(),
