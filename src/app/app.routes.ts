@@ -36,8 +36,7 @@ export const routes: Routes = [
   },
   {
     path: 'contract-definitions',
-    loadComponent: () =>
-      import('@eclipse-edc/dashboard-core/contract-definitions').then(m => m.ContractDefinitionsViewComponent),
+    loadComponent: () => import('@europeana/dashboard').then(m => m.EuropeanaContractDefinitionsViewComponent),
   },
   {
     path: 'contracts',

@@ -44,7 +44,8 @@ import { ContractDefinitionCardComponent } from '../contract-definition-card/con
 })
 export class ContractDefinitionsViewComponent implements OnInit, OnDestroy {
   contractDefinitionsService = inject(ContractDefinitionsService);
-  private readonly modalAndAlertService = inject(ModalAndAlertService);
+  /* CORE HACK : make 'modalAndAlertService' protected for Europeana subclasses */
+  protected readonly modalAndAlertService = inject(ModalAndAlertService);
   private readonly stateService = inject(DashboardStateService);
 
   private readonly destroy$ = new Subject<void>();
