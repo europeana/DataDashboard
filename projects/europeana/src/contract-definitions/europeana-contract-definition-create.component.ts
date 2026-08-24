@@ -15,13 +15,23 @@ import { ContractDefinitionCreateComponent } from '@eclipse-edc/dashboard-core/c
 export class EuropeanaContractDefinitionCreateComponent extends ContractDefinitionCreateComponent {
   /**
    * Label for a policy in the access/contract policy dropdowns.
-   * Uses `edc:name` when present; otherwise falls back to the policy ID.
+   * Same lookup as the Europeana policy form: `edc:name` on the definition,
+   * then `name`/`Name` in private properties; otherwise the policy ID.
    */
   policyLabel(policy: PolicyDefinition): string {
-    const name = policy.optionalValue<string>('edc', 'name');
-    if (typeof name === 'string' && name.trim()) {
-      return name.trim();
+    const fromDefinition = policy.optionalValue<string>('edc', 'name');
+    if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
+      return fromDefinition.trim();
     }
+
+    const privateProps = policy.nested('edc', 'privateProperties');
+    const fromPrivate =
+      privateProps.optionalValue<string>('edc', 'name') ??
+      privateProps.optionalValue<string>('edc', 'Name');
+    if (typeof fromPrivate === 'string' && fromPrivate.trim()) {
+      return fromPrivate.trim();
+    }
+
     return policy.id;
   }
 }
