@@ -50,7 +50,8 @@ import { JsonValue } from '@angular-devkit/core';
   styleUrl: './asset-create.component.css',
 })
 export class AssetCreateComponent implements OnChanges {
-  private readonly assetService = inject(AssetService);
+  /* CORE HACK : make variable 'assetService' protected */
+  protected readonly assetService = inject(AssetService);
   private readonly formBuilder = inject(FormBuilder);
 
   @Input() asset?: Asset;
@@ -81,42 +82,16 @@ export class AssetCreateComponent implements OnChanges {
     }
   }
 
+  /* CORE HACK : hook method to add custom form title */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   get formTitle(): string {
-    if (!this.asset) {
-      return 'Asset';
-    }
-    const name = this.getAssetName();
-    return name || this.asset.id;
+    return 'Asset';
   }
 
-  /**
-   * Get the display name of the asset currently being edited.
-   *
-   * Looks up `edc:name` on the original JSON-LD properties first, then the compacted
-   * `name` field after `compact()` has run. Empty or whitespace-only values are ignored.
-   *
-   * EDC APIs return properties with full namespace URLs.
-   * Compaction shortens those URLs into normal keys so the
-   * form can use properties['name'] instead of a long URI.
-   *
-   * @returns The trimmed name, or `undefined` when no usable name is present
-   *  so callers can fall back to the asset ID.
-   */
-  private getAssetName(): string | undefined {
-    const fromProperties = this.asset?.properties?.optionalValue<string>('edc', 'name');
-    if (typeof fromProperties === 'string' && fromProperties.trim()) {
-      return fromProperties.trim();
-    }
-    const fromCompact = this.properties['name'];
-    if (typeof fromCompact === 'string' && fromCompact.trim()) {
-      return fromCompact.trim();
-    }
-    return undefined;
-  }
-
-  private async updateAssetAndSyncForm() {
-    this.properties = await this.assetService.compactForForm(this.asset!.properties);
-    this.privateProperties = await this.assetService.compactForForm(this.asset!.privateProperties);
+  /* CORE HACK : make method protected */
+  protected async updateAssetAndSyncForm() {
+    this.properties = await compact(this.asset!.properties);
+    this.privateProperties = await compact(this.asset!.privateProperties);
     this.dataAddress = (await compact(this.asset!.dataAddress)) as unknown as BaseDataAddress;
     this.assetForm.get('id')?.setValue(this.asset!.id);
     this.assetForm.get('name')?.setValue(this.properties['name']);

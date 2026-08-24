@@ -208,6 +208,9 @@
       "architect": {
         "build": {
           "builder": "@angular/build:ng-packagr",
+          "options" : {
+             "project":"projects/europeana/ng-package.json"
+          },
           "configurations": {
             "production": {
               "tsConfig": "projects/europeana/tsconfig.lib.prod.json"

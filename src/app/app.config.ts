@@ -25,6 +25,7 @@ import { routes } from './app.routes';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { APP_BASE_HREF } from '@angular/common';
+import { provideEuropeanaDashboard } from '@europeana/dashboard';
 
 @Injectable({
   providedIn: 'root',
@@ -54,6 +55,7 @@ export const appConfig: ApplicationConfig = {
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
     provideHttpClient(),
+    ...provideEuropeanaDashboard(),
     provideAppInitializer(() => inject(BaseHrefService).load()),
     {
       provide: APP_BASE_HREF,
