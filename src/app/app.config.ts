@@ -26,7 +26,7 @@ import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common
 import { firstValueFrom } from 'rxjs';
 import { APP_BASE_HREF } from '@angular/common';
 import { AuthService } from './auth/auth.service';
-import { provideEuropeanaDashboard } from '@europeana/dashboard';
+import { provideEuropeanaDashboard } from '@europeana/dsp-dashboard';
 
 import { authInterceptor } from './auth/auth.interceptor';
 @Injectable({
