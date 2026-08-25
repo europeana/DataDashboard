@@ -77,17 +77,29 @@ export class AuthService {
     const nativeFetch = window.fetch.bind(window);
 
     window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-      // Start from headers already on the Request. The EDC client calls
-      // `fetch(request)` with no second argument; replacing that with only
-      // Authorization would drop Content-Type and cause 415s on catalog POST.
-      const headers = new Headers(input instanceof Request ? input.headers : undefined);
-      new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
-
       const accessToken = this.token;
-      if (accessToken) {
-        headers.set('Authorization', `Bearer ${accessToken}`);
+
+      const applyAuth = (headers: Headers, method: string, hasBody: boolean) => {
+        if (accessToken) {
+          headers.set('Authorization', `Bearer ${accessToken}`);
+        }
+        // EDC management POSTs JSON; keep Content-Type when the fetch bridge rewrites headers.
+        if (hasBody && !['GET', 'HEAD'].includes(method.toUpperCase()) && !headers.has('Content-Type')) {
+          headers.set('Content-Type', 'application/json');
+        }
+      };
+
+      if (input instanceof Request) {
+        const headers = new Headers(input.headers);
+        new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
+        applyAuth(headers, input.method, input.body != null);
+        // Rebuild the Request so body + headers stay together (fetch(request, {headers}) can drop Content-Type).
+        return nativeFetch(new Request(input, { headers }));
       }
 
+      const headers = new Headers(init?.headers);
+      const method = init?.method ?? 'GET';
+      applyAuth(headers, method, init?.body != null);
       return nativeFetch(input, { ...init, headers });
     };
 
