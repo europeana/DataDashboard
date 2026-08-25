@@ -1,5 +1,4 @@
 import {
-  AssetCardComponent,
   AssetViewComponent
 } from '@eclipse-edc/dashboard-core/assets';
 import { Component } from '@angular/core';
@@ -11,13 +10,20 @@ import {
 } from '@eclipse-edc/dashboard-core';
 import { Asset, IdResponse } from '@think-it-labs/edc-connector-client';
 import { EuropeanaAssetCreateComponent } from './europeana-asset-create.component';
+import { EuropeanaAssetCardComponent } from './europeana-asset-card.component';
 
 
 @Component({
   selector: 'europeana-asset-view',
   standalone: true,
-  imports: [AsyncPipe, FilterInputComponent, PaginationComponent, AssetCardComponent, ItemCountSelectorComponent],
-  templateUrl: '../../../dashboard-core/assets/src/asset-view/asset-view.component.html',
+  imports: [
+    AsyncPipe,
+    FilterInputComponent,
+    PaginationComponent,
+    EuropeanaAssetCardComponent,
+    ItemCountSelectorComponent,
+  ],
+  templateUrl: './europeana-asset-view.component.html',
   styleUrl: '../../../dashboard-core/assets/src/asset-view/asset-view.component.css',
 })
 export class EuropeanaAssetViewComponent extends AssetViewComponent{

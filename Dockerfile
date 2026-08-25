@@ -12,12 +12,13 @@
 #
 
 # Stage 1: Build the Angular application
-FROM node:22-alpine AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files and install dependencies
 COPY package.json package-lock.json ./
+#RUN npm install
 RUN npm ci
 
 # Copy the full project and build it
