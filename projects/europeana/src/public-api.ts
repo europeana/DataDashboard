@@ -12,6 +12,7 @@
 /*Customized 'asset' related classes,constants*/
 export { EuropeanaAssetViewComponent } from './assets/europeana-asset-view.component';
 export { EuropeanaAssetCreateComponent } from './assets/europeana-asset-create.component';
+export { EuropeanaAssetCardComponent } from './assets/europeana-asset-card.component';
 export { EuropeanaAssetService } from './assets/europeana-asset.service';
 
 /*Customized 'policy' related classes*/
@@ -24,3 +25,7 @@ export { provideEuropeanaDashboard } from './provide-europeana-dashboard';
 /* Customized contract-definition related classes */
 export { EuropeanaContractDefinitionCreateComponent } from './contract-definitions/europeana-contract-definition-create.component';
 export { EuropeanaContractDefinitionsViewComponent } from './contract-definitions/europeana-contract-definitions-view.component';
+
+/* Customized catalog related classes */
+export { EuropeanaCatalogCardComponent } from './catalog/europeana-catalog-card.component';
+export { EuropeanaCatalogViewComponent } from './catalog/europeana-catalog-view.component';

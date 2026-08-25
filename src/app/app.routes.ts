@@ -45,7 +45,7 @@ export const routes: Routes = [
 
   {
     path: 'catalog',
-    loadComponent: () => import('@eclipse-edc/dashboard-core/catalog').then(m => m.CatalogViewComponent),
+    loadComponent: () => import('@europeana/dsp-dashboard').then(m => m.EuropeanaCatalogViewComponent),
   },
   {
     path: 'transfer-history',

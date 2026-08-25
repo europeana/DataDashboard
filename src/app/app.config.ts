@@ -59,6 +59,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAppInitializer(() => inject(BaseHrefService).load()),
     provideAppInitializer(() => inject(AuthService).init()),
+    ...provideEuropeanaDashboard(),
 
     {
       provide: APP_BASE_HREF,
