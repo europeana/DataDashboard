@@ -77,19 +77,18 @@ export class AuthService {
     const nativeFetch = window.fetch.bind(window);
 
     window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
-      const headers = new Headers(init?.headers ?? {});
-      const accessToken = this.token;
+      // Start from headers already on the Request. The EDC client calls
+      // `fetch(request)` with no second argument; replacing that with only
+      // Authorization would drop Content-Type and cause 415s on catalog POST.
+      const headers = new Headers(input instanceof Request ? input.headers : undefined);
+      new Headers(init?.headers).forEach((value, key) => headers.set(key, value));
 
+      const accessToken = this.token;
       if (accessToken) {
         headers.set('Authorization', `Bearer ${accessToken}`);
       }
 
-      const nextInit: RequestInit = {
-        ...init,
-        headers,
-      };
-
-      return nativeFetch(input, nextInit);
+      return nativeFetch(input, { ...init, headers });
     };
 
     this.fetchBridgeInstalled = true;
