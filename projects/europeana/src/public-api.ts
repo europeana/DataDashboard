@@ -19,6 +19,7 @@ export { EuropeanaAssetService } from './assets/europeana-asset.service';
 export type { EuropeanaPolicyDefinitionInput } from './policies/europeana-policy-definition-input';
 export { EuropeanaPolicyCreateComponent } from './policies/europeana-policy-create.component';
 export { EuropeanaPolicyViewComponent } from './policies/europeana-policy-view.component';
+export { EuropeanaPolicyCardComponent } from './policies/europeana-policy-card.component';
 
 export { provideEuropeanaDashboard } from './provide-europeana-dashboard';
 
