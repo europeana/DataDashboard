@@ -26,6 +26,11 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
     return this.getPolicyName() || this.policyDefinition.id;
   }
 
+  /** Europeana label for the permissions / prohibitions / obligations block. */
+  override get propertiesSectionTitle(): string {
+    return 'Conditions';
+  }
+
   /**
    * Resolves the display name of the policy currently being edited.
    *

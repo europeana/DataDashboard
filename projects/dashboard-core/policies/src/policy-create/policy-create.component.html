@@ -59,7 +59,8 @@
 
   <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
-      <legend class="fieldset-legend text-sm">Properties</legend>
+      <!-- CORE HACK : propertiesSectionTitle hook for Europeana subclasses (e.g. rename Properties → Conditions) -->
+      <legend class="fieldset-legend text-sm">{{ propertiesSectionTitle }}</legend>
       <legend class="fieldset-label">Permissions</legend>
       <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
         <div class="flex items-center justify-between mb-1">

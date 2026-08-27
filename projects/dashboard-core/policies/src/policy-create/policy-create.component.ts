@@ -88,6 +88,12 @@ export class PolicyCreateComponent implements OnChanges {
     return 'Policy';
   }
 
+  /* CORE HACK : hook for Europeana subclasses (e.g. rename Properties → Conditions) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get propertiesSectionTitle(): string {
+    return 'Properties';
+  }
+
   createPolicyDefinition(): void {
     this.submit(input => this.policyService.createPolicyDefinition(input).then(res => this.created.emit(res)));
   }
