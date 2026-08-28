@@ -3,9 +3,10 @@ import { JsonValue } from '@angular-devkit/core';
 
 /**
  * Extend the interface 'PolicyDefinitionInput' [from library '@think-it-labs/edc-connector-client']
- *  to add the additional 'privateProperties' element and optional name / description metadata.
+ *  to add public / private property maps and optional name / description metadata.
  */
 export interface EuropeanaPolicyDefinitionInput extends PolicyDefinitionInput {
+  properties?: Record<string, JsonValue>;
   privateProperties?: Record<string, JsonValue>;
   /** Display name (serialized as edc:name on the policy definition). */
   name?: string;

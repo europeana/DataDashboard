@@ -16,7 +16,7 @@
   (ngSubmit)="contractDefinitionInput ? updateContractDefinition() : createContractDefinition()"
   class="flex flex-col overflow-y-auto h-full [&_label]:shrink-0"
 >
-  <h1 class="text-xl text-center divider m-0">Contract Definition</h1>
+  <h1 class="text-xl text-center divider m-0">{{ formTitle }}</h1>
 
   <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box mb-4">
     <legend class="fieldset-legend text-sm">Common Fields</legend>

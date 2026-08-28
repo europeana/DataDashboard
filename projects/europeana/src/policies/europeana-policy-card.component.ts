@@ -21,4 +21,12 @@ export class EuropeanaPolicyCardComponent extends PolicyCardComponent {
 
     return this.policyDefinition?.['@id'] ?? this.policyDefinition?.id ?? '';
   }
+
+  /** Card description: `edc:description` on the definition when present. */
+  override get cardDescription(): string | undefined {
+    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', 'description');
+    return typeof fromDefinition === 'string' && fromDefinition.trim()
+      ? fromDefinition.trim()
+      : undefined;
+  }
 }

@@ -18,6 +18,32 @@ export class EuropeanaContractDefinitionCreateComponent extends ContractDefiniti
     return true;
   }
 
+  override get formTitle(): string {
+    if (!this.contractDefinitionInput) {
+      return 'Contract Definition';
+    }
+    return this.getContractName() || this.contractDefinitionInput.id;
+  }
+
+  /**
+   * Resolves the display name of the contract definition currently being edited.
+   *
+   * Uses `edc:name` on the definition, then the Common Fields Name control.
+   * Empty or whitespace-only values are ignored.
+   */
+  private getContractName(): string | undefined {
+    const fromDefinition = this.contractDefinitionInput?.optionalValue<string>('edc', 'name');
+    if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
+      return fromDefinition.trim();
+    }
+
+    const fromForm = this.contractDefinitionForm?.get('name')?.value;
+    if (typeof fromForm === 'string' && fromForm.trim()) {
+      return fromForm.trim();
+    }
+    return undefined;
+  }
+
   /**
    * Prefills Name / Description from the definition (`edc:name` / `edc:description`).
    */

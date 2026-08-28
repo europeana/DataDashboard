@@ -25,6 +25,7 @@ export { provideEuropeanaDashboard } from './provide-europeana-dashboard';
 
 /* Customized contract-definition related classes */
 export { EuropeanaContractDefinitionCreateComponent } from './contract-definitions/europeana-contract-definition-create.component';
+export { EuropeanaContractDefinitionCardComponent } from './contract-definitions/europeana-contract-definition-card.component';
 export { EuropeanaContractDefinitionsViewComponent } from './contract-definitions/europeana-contract-definitions-view.component';
 
 /* Customized catalog related classes */

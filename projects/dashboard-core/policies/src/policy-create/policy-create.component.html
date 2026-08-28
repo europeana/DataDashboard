@@ -124,6 +124,19 @@
       </div>
     </fieldset>
 
+    <!-- CORE HACK : public Properties section for Europeana (showPublicPropertiesSection) -->
+    @if (showPublicPropertiesSection) {
+      <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+        <legend class="fieldset-legend text-sm">Properties</legend>
+        <lib-json-object-input
+          [object]="properties"
+          [excludeKeys]="publicPropertiesExcludeKeys"
+          (objectChange)="properties = $event"
+        >
+        </lib-json-object-input>
+      </fieldset>
+    }
+
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Private Properties</legend>
       <lib-json-object-input

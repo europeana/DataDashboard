@@ -7,10 +7,10 @@ import {
   PaginationComponent,
 } from '@eclipse-edc/dashboard-core';
 import {
-  ContractDefinitionCardComponent,
   ContractDefinitionsViewComponent,
 } from '@eclipse-edc/dashboard-core/contract-definitions';
 import { EuropeanaContractDefinitionCreateComponent } from './europeana-contract-definition-create.component';
+import { EuropeanaContractDefinitionCardComponent } from './europeana-contract-definition-card.component';
 
 @Component({
   selector: 'europeana-contract-definitions-view',
@@ -19,11 +19,10 @@ import { EuropeanaContractDefinitionCreateComponent } from './europeana-contract
     AsyncPipe,
     PaginationComponent,
     FilterInputComponent,
-    ContractDefinitionCardComponent,
+    EuropeanaContractDefinitionCardComponent,
     ItemCountSelectorComponent,
   ],
-  templateUrl:
-    '../../../dashboard-core/contract-definitions/src/contract-definitions-view/contract-definitions-view.component.html',
+  templateUrl: './europeana-contract-definitions-view.component.html',
   styleUrl:
     '../../../dashboard-core/contract-definitions/src/contract-definitions-view/contract-definitions-view.component.css',
 })

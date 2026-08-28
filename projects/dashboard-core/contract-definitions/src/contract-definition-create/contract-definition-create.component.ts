@@ -115,6 +115,12 @@ export class ContractDefinitionCreateComponent implements OnInit, OnChanges {
     return false;
   }
 
+  /* CORE HACK : hook for Europeana subclasses (form title from common field Name) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get formTitle(): string {
+    return 'Contract Definition';
+  }
+
   /* CORE HACK : hook for Europeana subclasses to prefill Name / Description */
   protected syncNameDescriptionFromDefinition() {
     // Core has no name/description metadata on contract definitions by default.

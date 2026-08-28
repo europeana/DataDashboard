@@ -36,6 +36,15 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
     return true;
   }
 
+  /** Show editable public Properties (same pattern as assets). */
+  override get showPublicPropertiesSection(): boolean {
+    return true;
+  }
+
+  override get publicPropertiesExcludeKeys(): string[] {
+    return ['@context', '@id', '@type', 'name', 'Name', 'description', 'Description'];
+  }
+
   /**
    * Resolves the display name of the policy currently being edited.
    *
@@ -64,19 +73,30 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
     await super.ngOnChanges();
     // Only when editing — create has no definition yet in 'policyDefinition'.
     if (this.policyDefinition){
+      this.properties = await this.loadPublicProperties();
       this.privateProperties = await this.loadPrivateProperties();
       this.syncNameDescriptionFromDefinition();
     }
   }
 
   /**
-   * Override createPolicyInput to attach privateProperties only.
-   * Name / Description are already set as top-level fields by the core form mapping.
+   * Override createPolicyInput to attach public / private property maps.
+   * Name / Description are merged into `properties` (asset pattern) and sent as top-level fields by core.
    * @protected
    */
   protected override createPolicyInput(): EuropeanaPolicyDefinitionInput {
+    const properties = this.toPublicPropertiesPayload();
+    const { name, description } = this.policyForm.value;
+    if (typeof name === 'string' && name.trim()) {
+      properties['name'] = name.trim();
+    }
+    if (typeof description === 'string' && description.trim()) {
+      properties['description'] = description.trim();
+    }
+
     const input: EuropeanaPolicyDefinitionInput = {
       ...super.createPolicyInput(),
+      properties,
       privateProperties: this.toPrivatePropertiesPayload(),
     };
     return input;
@@ -87,14 +107,36 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
    */
   private syncNameDescriptionFromDefinition() {
     this.policyForm.patchValue({
-      name: this.readDefinitionString('name') ?? '',
-      description: this.readDefinitionString('description') ?? '',
+      name: this.readDefinitionString('name') ?? this.readPropertyString('name') ?? '',
+      description: this.readDefinitionString('description') ?? this.readPropertyString('description') ?? '',
     });
+  }
+
+  private readPropertyString(key: string): string | undefined {
+    const value = this.properties?.[key];
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
   }
 
   private readDefinitionString(key: string): string | undefined {
     const value = this.policyDefinition?.optionalValue<string>('edc', key);
     return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
+  /**
+   * Loads public properties from the policy definition returned by the management API.
+   */
+  private async loadPublicProperties(): Promise<Record<string, JsonValue>> {
+    const props = this.policyDefinition!.nested('edc', 'properties');
+    return (await compact(props)) as Record<string, JsonValue>;
+  }
+
+  /**
+   * Builds the public-properties payload sent to the backend.
+   * JSON-LD metadata and common-field keys are omitted from the editor and re-applied on save.
+   */
+  private toPublicPropertiesPayload(): Record<string, JsonValue> {
+    const omit = new Set(['@context', '@id', '@type', 'name', 'Name', 'description', 'Description']);
+    return Object.fromEntries(Object.entries(this.properties ?? {}).filter(([key]) => !omit.has(key)));
   }
 
   /**

@@ -48,6 +48,7 @@ export class PolicyCreateComponent implements OnChanges {
 
   errorMsg = '';
 
+  properties: Record<string, JsonValue> = {};
   privateProperties: Record<string, JsonValue> = {};
 
   policyForm: FormGroup;
@@ -100,6 +101,17 @@ export class PolicyCreateComponent implements OnChanges {
   // eslint-disable-next-line @typescript-eslint/class-literal-property-style
   get showAdditionalCommonFields(): boolean {
     return false;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (editable public Properties section) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get showPublicPropertiesSection(): boolean {
+    return false;
+  }
+
+  /* CORE HACK : keys omitted from the public Properties editor (common fields managed separately) */
+  get publicPropertiesExcludeKeys(): string[] {
+    return ['@context'];
   }
 
   createPolicyDefinition(): void {
