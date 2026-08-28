@@ -41,6 +41,28 @@
         }
       </label>
 
+      <!-- CORE HACK : Name / Description common fields for Europeana (showAdditionalCommonFields) -->
+      @if (showAdditionalCommonFields) {
+        <legend class="fieldset-label">Name</legend>
+        <label
+          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+          data-tip="Can be filtered by and could be used as e.g. display name"
+        >
+          <span class="material-symbols-rounded opacity-50">assignment_ind</span>
+          <input type="text" class="grow" placeholder="Name" formControlName="name" name="name" />
+          <span class="badge badge-info">Optional</span>
+        </label>
+        <legend class="fieldset-label">Description</legend>
+        <label
+          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+          data-tip="Optional free-text description of the policy"
+        >
+          <span class="material-symbols-rounded opacity-50">notes</span>
+          <input type="text" class="grow" placeholder="Description" formControlName="description" name="description" />
+          <span class="badge badge-info">Optional</span>
+        </label>
+      }
+
       <legend class="fieldset-label">Policy-Type</legend>
       <label class="select w-full" [ngClass]="policyForm.get('policyType')?.invalid ? 'select-error' : ''">
         <span class="label">Type</span>
@@ -106,7 +128,9 @@
       <legend class="fieldset-legend text-sm">Private Properties</legend>
       <lib-json-object-input
         [object]="privateProperties"
-        [excludeKeys]="['@context']"
+        [excludeKeys]="
+          showAdditionalCommonFields ? ['@context', 'name', 'Name', 'description', 'Description'] : ['@context']
+        "
         (objectChange)="privateProperties = $event"
       >
       </lib-json-object-input>

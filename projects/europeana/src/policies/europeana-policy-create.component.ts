@@ -31,11 +31,16 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
     return 'Conditions';
   }
 
+  /** Show Name and Description under Common Fields. */
+  override get showAdditionalCommonFields(): boolean {
+    return true;
+  }
+
   /**
    * Resolves the display name of the policy currently being edited.
    *
-   * Checks `edc:name` on the policy definition first, then a `Name`/`name` entry
-   * in compacted private properties. Empty or whitespace-only values are ignored.
+   * Uses `edc:name` on the policy definition, then the Common Fields Name control.
+   * Empty or whitespace-only values are ignored.
    *
    * @returns The trimmed name, or `undefined` so callers can fall back to the policy ID.
    */
@@ -45,36 +50,52 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
       return fromDefinition.trim();
     }
 
-    const fromPrivate = Object.entries(this.privateProperties ?? {}).find(
-      ([key, value]) => key.toLowerCase() === 'name' && typeof value === 'string' && value.trim(),
-    );
-    if (fromPrivate && typeof fromPrivate[1] === 'string') {
-      return fromPrivate[1].trim();
+    const fromForm = this.policyForm?.get('name')?.value;
+    if (typeof fromForm === 'string' && fromForm.trim()) {
+      return fromForm.trim();
     }
     return undefined;
   }
 
   /**
-   * Override the ngOnChanges method to load private properties.
-   *
+   * Override the ngOnChanges method to load private properties and sync Name / Description.
    */
   override async ngOnChanges(){
     await super.ngOnChanges();
-    //Only when editing  , If change is due to 'create', it has no definition yet in 'policyDefinition'.
+    // Only when editing — create has no definition yet in 'policyDefinition'.
     if (this.policyDefinition){
       this.privateProperties = await this.loadPrivateProperties();
+      this.syncNameDescriptionFromDefinition();
     }
   }
 
   /**
-   * Override the 'createPolicyInput' to populate the 'privateProperties' element.
+   * Override createPolicyInput to attach privateProperties only.
+   * Name / Description are already set as top-level fields by the core form mapping.
    * @protected
    */
-    protected override createPolicyInput(): EuropeanaPolicyDefinitionInput {
-      const input : EuropeanaPolicyDefinitionInput = super.createPolicyInput();
-      input.privateProperties = this.toPrivatePropertiesPayload();
-      return input;
-    }
+  protected override createPolicyInput(): EuropeanaPolicyDefinitionInput {
+    const input: EuropeanaPolicyDefinitionInput = {
+      ...super.createPolicyInput(),
+      privateProperties: this.toPrivatePropertiesPayload(),
+    };
+    return input;
+  }
+
+  /**
+   * Prefills Name / Description from the definition (`edc:name` / `edc:description`).
+   */
+  private syncNameDescriptionFromDefinition() {
+    this.policyForm.patchValue({
+      name: this.readDefinitionString('name') ?? '',
+      description: this.readDefinitionString('description') ?? '',
+    });
+  }
+
+  private readDefinitionString(key: string): string | undefined {
+    const value = this.policyDefinition?.optionalValue<string>('edc', key);
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
 
   /**
    * Loads private properties from the policy definition returned by the management API.
@@ -91,13 +112,14 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
 
   /**
    * Builds the private-properties payload sent to the backend.
-   * JSON-LD metadata added by `compact()`.
-   * (`@context`, `@id`, `@type`) is omitted.
+   * JSON-LD metadata added by `compact()` (`@context`, `@id`, `@type`) is omitted.
+   * Name / Description are common fields and are never stored here.
    */
   private toPrivatePropertiesPayload(): Record<string, JsonValue> {
-    const jsonLdKeys = new Set(['@context', '@id', '@type']);
-    return Object.fromEntries(Object.entries(this.privateProperties ?? {})
-    .filter(([key]) => !jsonLdKeys.has(key)));
+    const omit = new Set(['@context', '@id', '@type', 'name', 'Name', 'description', 'Description']);
+    return Object.fromEntries(
+      Object.entries(this.privateProperties ?? {}).filter(([key]) => !omit.has(key)),
+    );
   }
 
 }

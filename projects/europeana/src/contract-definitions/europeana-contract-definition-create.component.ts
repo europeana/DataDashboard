@@ -13,23 +13,35 @@ import { ContractDefinitionCreateComponent } from '@eclipse-edc/dashboard-core/c
   styleUrl: '../../../dashboard-core/contract-definitions/src/contract-definition-create/contract-definition-create.component.css',
 })
 export class EuropeanaContractDefinitionCreateComponent extends ContractDefinitionCreateComponent {
+  /** Show Name and Description under Common Fields. */
+  override get showAdditionalCommonFields(): boolean {
+    return true;
+  }
+
+  /**
+   * Prefills Name / Description from the definition (`edc:name` / `edc:description`).
+   */
+  protected override syncNameDescriptionFromDefinition() {
+    this.contractDefinitionForm.patchValue({
+      name: this.readDefinitionString('name') ?? '',
+      description: this.readDefinitionString('description') ?? '',
+    });
+  }
+
+  private readDefinitionString(key: string): string | undefined {
+    const value = this.contractDefinitionInput?.optionalValue<string>('edc', key);
+    return typeof value === 'string' && value.trim() ? value.trim() : undefined;
+  }
+
   /**
    * Label for a policy in the access/contract policy dropdowns.
-   * Same lookup as the Europeana policy form: `edc:name` on the definition,
-   * then `name`/`Name` in private properties; otherwise the policy ID.
+   * Same lookup as the Europeana policy form: `edc:name` on the definition;
+   * otherwise the policy ID.
    */
   policyLabel(policy: PolicyDefinition): string {
     const fromDefinition = policy.optionalValue<string>('edc', 'name');
     if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
       return fromDefinition.trim();
-    }
-
-    const privateProps = policy.nested('edc', 'privateProperties');
-    const fromPrivate =
-      privateProps.optionalValue<string>('edc', 'name') ??
-      privateProps.optionalValue<string>('edc', 'Name');
-    if (typeof fromPrivate === 'string' && fromPrivate.trim()) {
-      return fromPrivate.trim();
     }
 
     return policy.id;

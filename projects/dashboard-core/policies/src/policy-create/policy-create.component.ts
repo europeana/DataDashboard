@@ -55,6 +55,8 @@ export class PolicyCreateComponent implements OnChanges {
   constructor() {
     this.policyForm = this.formBuilder.group({
       id: [''],
+      name: [''],
+      description: [''],
       policyType: new FormControl<PolicyType | undefined>(undefined, {
         validators: [Validators.required],
       }),
@@ -94,6 +96,12 @@ export class PolicyCreateComponent implements OnChanges {
     return 'Properties';
   }
 
+  /* CORE HACK : hook for Europeana subclasses (Name / Description common fields) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get showAdditionalCommonFields(): boolean {
+    return false;
+  }
+
   createPolicyDefinition(): void {
     this.submit(input => this.policyService.createPolicyDefinition(input).then(res => this.created.emit(res)));
   }
@@ -122,9 +130,10 @@ export class PolicyCreateComponent implements OnChanges {
     });
   }
 
-  /* CORE HACK : make method protected */
+  /* CORE HACK : make method protected; include optional name/description for Europeana common fields */
   protected createPolicyInput(): PolicyDefinitionInput {
-    const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson } = this.policyForm.value;
+    const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson, name, description } =
+      this.policyForm.value;
 
     const policyInput: PolicyInput = { '@type': policyType };
     this.assignJsonRule(policyInput, 'permission', permissionsJson, 'Permissions');
@@ -136,10 +145,16 @@ export class PolicyCreateComponent implements OnChanges {
       .raw(policyInput)
       .build();
 
-    const policyDefinitionInput: PolicyDefinitionInput = { policy };
+    const policyDefinitionInput: PolicyDefinitionInput & { name?: string; description?: string } = { policy };
     if (id) {
       policyDefinitionInput.id = id;
       policyDefinitionInput['@id'] = id;
+    }
+    if (typeof name === 'string' && name.trim()) {
+      policyDefinitionInput.name = name.trim();
+    }
+    if (typeof description === 'string' && description.trim()) {
+      policyDefinitionInput.description = description.trim();
     }
 
     return policyDefinitionInput;

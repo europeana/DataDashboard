@@ -71,6 +71,8 @@ export class ContractDefinitionCreateComponent implements OnInit, OnChanges {
   constructor() {
     this.contractDefinitionForm = this.formBuilder.group({
       id: [''],
+      name: [''],
+      description: [''],
       accessPolicyId: new FormControl(undefined, {
         validators: [Validators.required],
       }),
@@ -104,6 +106,18 @@ export class ContractDefinitionCreateComponent implements OnInit, OnChanges {
     this.contractDefinitionForm.get('id')?.setValue(this.contractDefinitionInput?.id ?? '');
     this.contractDefinitionForm.get('accessPolicyId')?.setValue(this.contractDefinitionInput?.accessPolicyId);
     this.contractDefinitionForm.get('contractPolicyId')?.setValue(this.contractDefinitionInput?.contractPolicyId);
+    this.syncNameDescriptionFromDefinition();
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (Name / Description common fields) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get showAdditionalCommonFields(): boolean {
+    return false;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses to prefill Name / Description */
+  protected syncNameDescriptionFromDefinition() {
+    // Core has no name/description metadata on contract definitions by default.
   }
 
   async createPolicy() {
@@ -143,19 +157,28 @@ export class ContractDefinitionCreateComponent implements OnInit, OnChanges {
     }
   }
 
-  private createContractDefinitionInput(): ContractDefinitionInput {
+  /* CORE HACK : make method protected; include optional name/description for Europeana common fields */
+  protected createContractDefinitionInput(): ContractDefinitionInput {
     const assetsSelector: CriterionInput[] = [];
     this.assetInput.forEach((asset: string) => {
       assetsSelector.push({ operandLeft: 'id', operandRight: asset, operator: '=' });
     });
 
-    const contractDefinition: ContractDefinitionInput = {
-      accessPolicyId: this.contractDefinitionForm.value.accessPolicyId,
-      contractPolicyId: this.contractDefinitionForm.value.contractPolicyId,
+    const { id, accessPolicyId, contractPolicyId, name, description } = this.contractDefinitionForm.value;
+
+    const contractDefinition: ContractDefinitionInput & { name?: string; description?: string } = {
+      accessPolicyId,
+      contractPolicyId,
       assetsSelector: assetsSelector,
     };
-    if (this.contractDefinitionForm.value.id) {
-      contractDefinition['@id'] = this.contractDefinitionForm.value.id;
+    if (id) {
+      contractDefinition['@id'] = id;
+    }
+    if (typeof name === 'string' && name.trim()) {
+      contractDefinition.name = name.trim();
+    }
+    if (typeof description === 'string' && description.trim()) {
+      contractDefinition.description = description.trim();
     }
     return contractDefinition;
   }

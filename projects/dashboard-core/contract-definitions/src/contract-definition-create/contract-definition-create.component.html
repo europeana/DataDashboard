@@ -41,6 +41,28 @@
         <span class="badge badge-warning">Readonly</span>
       }
     </label>
+
+    <!-- CORE HACK : Name / Description common fields for Europeana (showAdditionalCommonFields) -->
+    @if (showAdditionalCommonFields) {
+      <legend class="fieldset-label">Name</legend>
+      <label
+        class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+        data-tip="Can be filtered by and could be used as e.g. display name"
+      >
+        <span class="material-symbols-rounded opacity-50">assignment_ind</span>
+        <input type="text" class="grow" placeholder="Name" formControlName="name" name="name" />
+        <span class="badge badge-info">Optional</span>
+      </label>
+      <legend class="fieldset-label">Description</legend>
+      <label
+        class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+        data-tip="Optional free-text description of the contract definition"
+      >
+        <span class="material-symbols-rounded opacity-50">notes</span>
+        <input type="text" class="grow" placeholder="Description" formControlName="description" name="description" />
+        <span class="badge badge-info">Optional</span>
+      </label>
+    }
   </fieldset>
   @if ((policyDefinitions$ | async)?.length ?? 0 > 0) {
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box mb-4">
