@@ -121,8 +121,7 @@ export class AssetCreateComponent implements OnChanges {
     }
   }
 
-  /* CORE HACK : make method protected for Europeana subclasses (e.g. dataAddress properties) */
-  protected createAssetInput(): AssetInput {
+  private createAssetInput(): AssetInput {
     const asset: AssetInput = {
       dataAddress: this.dataAddress!,
       properties: this.properties,
