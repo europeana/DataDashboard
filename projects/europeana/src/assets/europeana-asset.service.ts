@@ -6,17 +6,29 @@ import { DashboardStateService, EdcConfig } from '@eclipse-edc/dashboard-core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { JsonValue } from '@angular-devkit/core';
 
+/** EDC default vocab — always attached on create/update. */
+const EDC_VOCAB = 'https://w3id.org/edc/v0.0.1/ns/';
+
 /**
- * JSON-LD context used for asset create/update.
- * Extends the EDC default `@vocab` with common dataspace vocabularies so prefixed
- * properties (e.g. `dct:title`, `dcat:keyword`) resolve correctly on the Management API.
+ * Optional schema prefixes attached to `@context` only when a property key
+ * uses that CURIE (e.g. `dcterms:description`, `dcat:mediaType`).
+ * Plain keys like `description` stay under `@vocab` and do not pull these in.
  */
-export const ASSET_JSON_LD_CONTEXT = {
-  '@vocab': 'https://w3id.org/edc/v0.0.1/ns/',
+const SCHEMA_NAMESPACES: Readonly<Record<string, string>> = {
   dcat: 'https://www.w3.org/ns/dcat/',
   dct: 'https://purl.org/dc/terms/',
+  dcterms: 'https://purl.org/dc/terms/',
   odrl: 'http://www.w3.org/ns/odrl/2/',
   dspace: 'https://w3id.org/dspace/v0.8/',
+};
+
+/**
+ * Full catalog (EDC vocab + every known schema). Kept for callers that need
+ * the complete map; create/update use {@link EuropeanaAssetService} dynamic context.
+ */
+export const ASSET_JSON_LD_CONTEXT = {
+  '@vocab': EDC_VOCAB,
+  ...SCHEMA_NAMESPACES,
 } as const;
 
 /**
@@ -25,12 +37,16 @@ export const ASSET_JSON_LD_CONTEXT = {
  * (CURIE-short Compact URI )
  * Includes common alternate spellings of DCAT (`#` vs `/`, http vs https).
  * See : https://www.w3.org/TR/vocab-dcat-1/ *
+ *
+ * Only full IRIs are rewritten. Plain keys (e.g. `description`) are left as-is.
  */
 const DISPLAY_NAMESPACE_PREFIXES: readonly (readonly [string, string])[] = [
   ['dcat:', 'https://www.w3.org/ns/dcat/'],
   ['dcat:', 'http://www.w3.org/ns/dcat/'],
   ['dcat:', 'https://www.w3.org/ns/dcat#'],
   ['dcat:', 'http://www.w3.org/ns/dcat#'],
+  ['dcterms:', 'https://purl.org/dc/terms/'],
+  ['dcterms:', 'http://purl.org/dc/terms/'],
   ['dct:', 'https://purl.org/dc/terms/'],
   ['dct:', 'http://purl.org/dc/terms/'],
   ['odrl:', 'http://www.w3.org/ns/odrl/2/'],
@@ -73,8 +89,9 @@ export class EuropeanaAssetService extends AssetService{
   }
 
   /**
-   * Compacts JSON-LD for the asset form and rewrites known vocabulary IRIs
-   * to short prefixes (`dcat:mediaType` instead of the full URL).
+   * Compacts JSON-LD for the asset form.
+   * Full vocabulary IRIs become CURIEs (`dcat:mediaType`); plain keys
+   * (`description`) are left unchanged — no schema conversion.
    */
   public async compactForForm(value: unknown): Promise<Record<string, JsonValue>> {
     const compacted = (await compact(value)) as Record<string, JsonValue>;
@@ -83,7 +100,7 @@ export class EuropeanaAssetService extends AssetService{
 
   /**
    * Rewrites full namespace IRIs to CURIE-style keys using
-   * {@link DISPLAY_NAMESPACE_PREFIXES}.
+   * {@link DISPLAY_NAMESPACE_PREFIXES}. Plain / unprefixed keys are untouched.
    */
   public toPrefixedKeys(object: Record<string, JsonValue>): Record<string, JsonValue> {
     return Object.fromEntries(
@@ -102,11 +119,52 @@ export class EuropeanaAssetService extends AssetService{
     return key;
   }
 
-  private withContext(assetInput: AssetInput): AssetInput & { '@context': typeof ASSET_JSON_LD_CONTEXT } {
+  /**
+   * Attaches `@context` with EDC `@vocab` always, plus schema prefixes only
+   * when a property key already uses that schema (e.g. `dcterms:description`).
+   */
+  private withContext(assetInput: AssetInput): AssetInput & { '@context': Record<string, string> } {
     return {
       ...assetInput,
-      '@context': ASSET_JSON_LD_CONTEXT,
+      '@context': this.buildContext(assetInput),
     };
+  }
+
+  private buildContext(assetInput: AssetInput): Record<string, string> {
+    const context: Record<string, string> = { '@vocab': EDC_VOCAB };
+    for (const prefix of this.collectSchemaPrefixes(assetInput)) {
+      const namespace = SCHEMA_NAMESPACES[prefix];
+      if (namespace) {
+        context[prefix] = namespace;
+      }
+    }
+    return context;
+  }
+
+  /** Collect CURIE prefixes used in properties / privateProperties / dataAddress.properties. */
+  private collectSchemaPrefixes(assetInput: AssetInput): Set<string> {
+    const found = new Set<string>();
+    const address = assetInput.dataAddress as { properties?: Record<string, unknown> } | undefined;
+    const maps: unknown[] = [assetInput.properties, assetInput.privateProperties, address?.properties];
+
+    for (const map of maps) {
+      if (!map || typeof map !== 'object' || Array.isArray(map)) {
+        continue;
+      }
+      for (const key of Object.keys(map)) {
+        this.addSchemaPrefixesFromKey(key, found);
+      }
+    }
+    return found;
+  }
+
+  private addSchemaPrefixesFromKey(key: string, found: Set<string>): void {
+    for (const prefix of Object.keys(SCHEMA_NAMESPACES)) {
+      // Matches `dcterms:description` and nested `distribution.1.dcterms:title`
+      if (key === prefix || key.startsWith(`${prefix}:`) || key.includes(`.${prefix}:`)) {
+        found.add(prefix);
+      }
+    }
   }
 
   private headers(config: EdcConfig): HttpHeaders {

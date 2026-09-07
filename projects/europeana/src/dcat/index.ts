@@ -1,3 +1,4 @@
-export { DCAT_RESOURCE_FIELDS, dcatPropertyKeys } from './dcat-resource-fields';
+export { DCAT_FIELDS, DCAT_FORM_FIELDS, dcatOwnedKeys, dcatPropertyKeys } from './dcat-resource-fields';
 export type { DcatField } from './dcat-resource-fields';
 export { EuropeanaDcatResourcePropertiesComponent } from './dcat-resource-properties.component';
+export type { DcatPropertiesLayout } from './dcat-resource-properties.component';

@@ -1,42 +1,83 @@
-@if (form) {
-  <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box" [formGroup]="form">
-    <legend class="fieldset-legend text-sm">{{ title }}</legend>
+<fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box">
+  <legend class="fieldset-legend text-sm">{{ title }}</legend>
+  @if (hint) {
+    <p class="text-xs opacity-70 mb-2">{{ hint }}</p>
+  }
 
-    @for (field of fields; track field.key) {
-      <legend class="fieldset-label">{{ field.label }}</legend>
-      @if (field.type === 'textarea') {
-        <label
-          class="textarea flex items-start tooltip tooltip-info tooltip-top w-full min-h-20"
-          [attr.data-tip]="field.tip || null"
-        >
-          @if (field.icon) {
-            <span class="material-symbols-rounded opacity-50 mt-1">{{ field.icon }}</span>
-          }
-          <textarea
-            class="grow bg-transparent border-0 outline-none resize-y min-h-16"
-            [placeholder]="field.label"
-            [formControlName]="field.key"
-            rows="3"
-          ></textarea>
-          <span class="badge badge-info">Optional</span>
-        </label>
-      } @else {
-        <label
-          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
-          [attr.data-tip]="field.tip || null"
-        >
-          @if (field.icon) {
-            <span class="material-symbols-rounded opacity-50">{{ field.icon }}</span>
-          }
-          <input
-            class="grow"
-            [type]="field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'"
-            [placeholder]="field.type === 'tags' ? 'keyword1, keyword2' : field.label"
-            [formControlName]="field.key"
-          />
-          <span class="badge badge-info">Optional</span>
-        </label>
+  @if (layout === 'fields' && fieldsForm) {
+    <div [formGroup]="fieldsForm">
+      @for (field of fields; track field.key) {
+        <legend class="fieldset-label">{{ field.label }}</legend>
+        @if (field.type === 'textarea') {
+          <label
+            class="textarea flex items-start tooltip tooltip-info tooltip-top w-full min-h-20"
+            [attr.data-tip]="field.tip || null"
+          >
+            @if (field.icon) {
+              <span class="material-symbols-rounded opacity-50 mt-1">{{ field.icon }}</span>
+            }
+            <textarea
+              class="grow bg-transparent border-0 outline-none resize-y min-h-16"
+              [placeholder]="fieldPlaceholder(field)"
+              [formControlName]="field.key"
+              rows="3"
+            ></textarea>
+            <span class="badge badge-info">Optional</span>
+          </label>
+        } @else {
+          <label
+            class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+            [attr.data-tip]="field.tip || null"
+          >
+            @if (field.icon) {
+              <span class="material-symbols-rounded opacity-50">{{ field.icon }}</span>
+            }
+            <input
+              class="grow"
+              [type]="field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'"
+              [placeholder]="fieldPlaceholder(field)"
+              [formControlName]="field.key"
+            />
+            <span class="badge badge-info">Optional</span>
+          </label>
+        }
       }
+    </div>
+  } @else {
+    @if (hasProperties) {
+      <lib-json-object-table
+        class="w-full mx-auto"
+        [object]="properties"
+        [excludeKeys]="[]"
+        [deleteButton]="true"
+        (delete)="deleteProperty($event)"
+      ></lib-json-object-table>
     }
-  </fieldset>
-}
+
+    <legend class="fieldset-label">New Property</legend>
+    <div class="join w-full" [formGroup]="addForm">
+      <input
+        class="input input-bordered join-item"
+        [class.input-error]="duplicateKey"
+        placeholder="Key"
+        formControlName="key"
+      />
+      <input
+        class="input input-bordered join-item"
+        [placeholder]="valuePlaceholder"
+        formControlName="value"
+      />
+      <button
+        type="button"
+        class="btn btn-soft btn-primary join-item border-primary"
+        [disabled]="duplicateKey"
+        (click)="addProperty()"
+      >
+        Add
+      </button>
+    </div>
+    @if (duplicateKey) {
+      <p class="fieldset-label text-error">A property with this key already exists</p>
+    }
+  }
+</fieldset>

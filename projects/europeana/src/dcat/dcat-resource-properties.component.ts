@@ -9,160 +9,194 @@ import {
   SimpleChanges,
   inject,
 } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JsonValue } from '@angular-devkit/core';
+import { JsonObjectTableComponent } from '@eclipse-edc/dashboard-core';
 import { Subject, takeUntil } from 'rxjs';
-import { DCAT_RESOURCE_FIELDS, DcatField, dcatPropertyKeys } from './dcat-resource-fields';
+import { DCAT_FIELDS, DcatField, dcatOwnedKeys } from './dcat-resource-fields';
+
+/** UI layout for the same pluggable component. */
+export type DcatPropertiesLayout = 'fields' | 'properties';
 
 /**
- * Pluggable field group for DCAT Resource properties.
+ * Pluggable DCAT properties editor (asset Resource + dataAddress Distributions).
  *
- * Drop into any form that has a `properties` map:
+ * - `layout="fields"` — Common Fields style (labeled inputs)
+ * - `layout="properties"` — Properties style (table + key/value add)
  *
- * ```html
- * <europeana-dcat-resource-properties
- *   [properties]="properties"
- *   (propertiesChange)="properties = $event"
- * />
- * ```
- *
- * Loads known DCAT keys from `properties` into inputs; on change, writes them
- * back while keeping any other (custom) keys untouched.
+ * Optional {@link DcatField.placeholder} only when set on a field.
+ * Free-form keys are not strictly validated.
  */
 @Component({
   selector: 'europeana-dcat-resource-properties',
   standalone: true,
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, JsonObjectTableComponent],
   templateUrl: './dcat-resource-properties.component.html',
 })
 export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChanges, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly destroy$ = new Subject<void>();
 
-  /** `properties` map from the API / parent form. */
   @Input() properties: Record<string, JsonValue> = {};
-
-  /** Fieldset title. */
+  /** `fields` = Common Fields look; `properties` = normal Properties look. */
+  @Input() layout: DcatPropertiesLayout = 'properties';
   @Input() title = 'DCAT Resource';
-
-  /** Emits the full properties map (custom keys kept + DCAT fields applied). */
+  /** Optional help text under the title (e.g. key naming examples). */
+  @Input() hint = '';
+  @Input() fields: readonly DcatField[] = DCAT_FIELDS;
   @Output() propertiesChange = new EventEmitter<Record<string, JsonValue>>();
 
-  readonly fields = DCAT_RESOURCE_FIELDS;
-  form!: FormGroup;
+  fieldsForm!: FormGroup;
 
-  /**
-   * Keys owned by this DCAT group (e.g. `dct:title`, `dct:description`).
-   * Pass to a free-form properties editor as `excludeKeys` so those fields
-   * are not edited twice.
-   */
+  addForm = new FormGroup({
+    key: new FormControl('', Validators.required),
+    value: new FormControl('', Validators.required),
+  });
+
+  /** Keys owned by the configured field catalog (used to hide them from free-form tables). */
   get dcatExcludeKeys(): string[] {
-    return dcatPropertyKeys(this.fields);
+    return dcatOwnedKeys(this.fields);
   }
 
-  /**
-   * Runs once when the component is created.
-   * Builds one FormControl per DCAT field, fills them from the current
-   * `properties` input, then listens for user edits and emits the updated map.
-   */
-  ngOnInit(): void {
-    this.form = this.fb.group(
-      Object.fromEntries(this.fields.map(f => [f.key, ['']])),
-    );
-    this.loadFromProperties(this.properties);
+  /** Whether the current properties map has any entries. */
+  get hasProperties(): boolean {
+    return Object.keys(this.properties ?? {}).length > 0;
+  }
 
-    this.form.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      this.propertiesChange.emit(this.toProperties());
+  /** True when the add-form key already exists in properties (case-insensitive). */
+  get duplicateKey(): boolean {
+    const key = this.addForm.value.key?.trim();
+    return !!key && this.hasKey(key);
+  }
+
+  /** Placeholder for the free-form value input; uses the field catalog when the key matches. */
+  get valuePlaceholder(): string {
+    const raw = this.addForm.value.key?.trim();
+    if (!raw) {
+      return 'Value';
+    }
+    const field = this.findField(raw);
+    return field?.placeholder?.trim() || 'Value';
+  }
+
+  /** Builds the fields form and emits property updates when layout is `fields`. */
+  ngOnInit(): void {
+    this.fieldsForm = this.fb.group(Object.fromEntries(this.fields.map(f => [f.key, ['']])));
+    this.loadFieldsForm(this.properties);
+
+    this.fieldsForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
+      if (this.layout === 'fields') {
+        this.propertiesChange.emit(this.fieldsToProperties());
+      }
     });
   }
 
-  /**
-   * Runs when parent inputs change.
-   * If `properties` is updated after init (e.g. asset loaded for edit),
-   * reloads the form fields from that new map without re-emitting.
-   */
+  /** Reloads labeled inputs when the parent updates `properties` after first change. */
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['properties'] && this.form && !changes['properties'].firstChange) {
-      this.loadFromProperties(this.properties);
+    if (changes['properties'] && this.fieldsForm && !changes['properties'].firstChange) {
+      this.loadFieldsForm(this.properties);
     }
   }
 
-  /**
-   * Runs when the component is destroyed.
-   * Completes the destroy$ subject so the valueChanges subscription stops
-   * and does not leak after the form is closed.
-   */
+  /** Tears down valueChanges subscription. */
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
   }
 
+  /** Returns a field's optional placeholder, or empty string. */
+  fieldPlaceholder(field: DcatField): string {
+    return field.placeholder?.trim() || '';
+  }
+
+  /** Adds a free-form key/value pair and clears the add form. */
+  addProperty(): void {
+    if (!this.addForm.valid || this.duplicateKey) {
+      return;
+    }
+    const key = this.addForm.value.key!.trim();
+    const value = this.parseValue(this.addForm.value.value!);
+    this.propertiesChange.emit({ ...this.properties, [key]: value });
+    this.addForm.reset();
+  }
+
+  /** Removes one property by key and emits the updated map. */
+  deleteProperty(key: string): void {
+    const { [key]: _, ...rest } = this.properties ?? {};
+    this.propertiesChange.emit(rest);
+  }
+
   /**
-   * Form → properties map (for save / parent binding).
-   * - Keeps every non-DCAT key from the current `properties` input, then
-   * overlays non-empty values from the form under each field's primary key
-   * (e.g. `dct:description`). 
-   * - Empty form fields are skipped.
+   * Merges labeled field values into the properties map.
+   * Preserves non-owned keys and reuses existing alias keys when present.
    */
-  toProperties(): Record<string, JsonValue> {
-    const owned = new Set(dcatPropertyKeys(this.fields).map(k => k.toLowerCase()));
+  private fieldsToProperties(): Record<string, JsonValue> {
+    const owned = new Set(dcatOwnedKeys(this.fields).map(k => k.toLowerCase()));
     const rest = Object.fromEntries(
       Object.entries(this.properties ?? {}).filter(([k]) => !owned.has(k.toLowerCase())),
     );
 
     for (const field of this.fields) {
-      const raw = this.form.get(field.key)?.value;
+      const raw = this.fieldsForm.get(field.key)?.value;
       if (typeof raw !== 'string' || !raw.trim()) {
         continue;
       }
-      rest[field.key] = field.type === 'tags' ? this.parseTags(raw) : raw.trim();
+      const writeKey = this.findPropertyEntry(this.properties ?? {}, field)?.key ?? field.key;
+      rest[writeKey] = field.type === 'tags' ? this.parseTags(raw) : raw.trim();
     }
     return rest;
   }
 
-  /**
-   * Properties map → form (for display / edit).
-   * For each DCAT field, finds a value in the map (primary key or alias)
-   * and patches the matching FormControl. Uses emitEvent: false so this
-   * load does not trigger propertiesChange.
-   */
-  private loadFromProperties(properties: Record<string, JsonValue> | undefined): void {
+  /** Patches the fields form from a properties map without emitting valueChanges. */
+  private loadFieldsForm(properties: Record<string, JsonValue> | undefined): void {
+    if (!this.fieldsForm) {
+      return;
+    }
     const source = properties ?? {};
     const patch: Record<string, string> = {};
-   
     for (const field of this.fields) {
-      const value = this.readValue(source, field);
-      patch[field.key] = value === undefined ? '' : this.toInputString(value, field);
+      const match = this.findPropertyEntry(source, field);
+      patch[field.key] = match ? this.toInputString(match.value, field) : '';
     }
-    // emitEvent: false so this load does not trigger propertiesChange
-    this.form.patchValue(patch, { emitEvent: false });
+    this.fieldsForm.patchValue(patch, { emitEvent: false });
   }
 
   /**
-   * Looks up one field's value in a properties map.
-   * Tries the primary key first (e.g. `dct:description`), then aliases
-   * (e.g. EDC `description`). Matching is case-insensitive.
+   * Finds a property entry for a catalog field by key or alias (case-insensitive).
+   * Returns the actual source key so writes can preserve the original spelling.
    */
-  private readValue(source: Record<string, JsonValue>, field: DcatField): JsonValue | undefined {
+  private findPropertyEntry(
+    source: Record<string, JsonValue>,
+    field: DcatField,
+  ): { key: string; value: JsonValue } | undefined {
     for (const key of [field.key, ...(field.aliases ?? [])]) {
       const direct = source[key];
       if (direct !== undefined && direct !== null && direct !== '') {
-        return direct;
+        return { key, value: direct };
       }
       const found = Object.entries(source).find(([k]) => k.toLowerCase() === key.toLowerCase());
       if (found && found[1] !== undefined && found[1] !== null && found[1] !== '') {
-        return found[1];
+        return { key: found[0], value: found[1] };
       }
     }
     return undefined;
   }
 
-  /**
-   * Converts a JSON-LD / API property value into a string for the input.
-   * - Tag fields that arrive as arrays become a comma-separated string.
-   * - primitives are stringified. 
-   * -anything else becomes ''.
-   */
+  /** Resolves a free-form key name to a catalog field via key or aliases. */
+  private findField(name: string): DcatField | undefined {
+    const lower = name.toLowerCase();
+    return this.fields.find(
+      f => f.key.toLowerCase() === lower || f.aliases?.some(a => a.toLowerCase() === lower),
+    );
+  }
+
+  /** Case-insensitive check that a key already exists in properties. */
+  private hasKey(key: string): boolean {
+    const lower = key.toLowerCase();
+    return Object.keys(this.properties ?? {}).some(k => k.toLowerCase() === lower);
+  }
+
+  /** Converts a stored JsonValue into a string for a labeled input. */
   private toInputString(value: JsonValue, field: DcatField): string {
     if (field.type === 'tags' && Array.isArray(value)) {
       return value.map(String).join(', ');
@@ -173,15 +207,27 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
     return '';
   }
 
-  /**
-   * Parses a comma-separated keywords string back into a property value.
-   * One tag → a single string; several tags → a string array.
-   */
+  /** Parses a comma-separated tags string into a single string or string array. */
   private parseTags(value: string): JsonValue {
     const tags = value
       .split(',')
       .map(t => t.trim())
       .filter(Boolean);
     return tags.length <= 1 ? (tags[0] ?? value.trim()) : tags;
+  }
+
+  /** Coerces free-form input into boolean, number, JSON, or plain string. */
+  private parseValue(input: string): JsonValue {
+    if (input === 'true' || input === 'false') {
+      return input === 'true';
+    }
+    if (!isNaN(Number(input)) && input.trim() !== '') {
+      return Number(input);
+    }
+    try {
+      return JSON.parse(input);
+    } catch {
+      return input;
+    }
   }
 }

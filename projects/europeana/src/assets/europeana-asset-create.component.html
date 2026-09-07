@@ -45,35 +45,28 @@
       </label>
     </fieldset>
 
+    <!-- Asset-level: Common Fields look (title, description, publisher, keyword) -->
+    <europeana-dcat-resource-properties
+      class="w-lg block"
+      layout="fields"
+      [fields]="resourceFormFields"
+      [properties]="properties"
+      title="Resource common fields"
+      (propertiesChange)="properties = $event"
+    ></europeana-dcat-resource-properties>
+
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Data Address</legend>
-      <!-- EDITED: uses onDataAddressChange to preserve nested DCAT properties -->
+      <!-- EDITED: uses onDataAddressChange to preserve nested properties -->
       <lib-data-address-form
         [parentForm]="assetForm"
         [dataAddress]="dataAddress"
         (dataAddressChange)="onDataAddressChange($event)"
       ></lib-data-address-form>
-
-      <!-- NEW: DCAT Resource fields for this data address → dataAddress.properties -->
-      <div class="mt-4">
-        <europeana-dcat-resource-properties
-          [properties]="dataAddressProperties"
-          title="Data Address Resource Properties"
-          (propertiesChange)="onDataAddressPropertiesChange($event)"
-        ></europeana-dcat-resource-properties>
-      </div>
     </fieldset>
   </div>
 
   <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
-    <!-- NEW: DCAT Resource fields for the asset → asset.properties -->
-    <europeana-dcat-resource-properties
-      class="w-lg block"
-      [properties]="properties"
-      title="Resource Properties"
-      (propertiesChange)="properties = $event"
-    ></europeana-dcat-resource-properties>
-
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Properties</legend>
       <!-- EDITED: excludeKeys includes DCAT keys via propertiesExcludeKeys -->
@@ -94,6 +87,15 @@
       >
       </lib-json-object-input>
     </fieldset>
+
+    <europeana-dcat-resource-properties
+      class="w-lg block"
+      layout="properties"
+      [properties]="dataAddressProperties"
+      title="Distributions"
+      hint="Add keys as distribution.N.propertyName (e.g. distribution.1.title, distribution.2.mediaType). Stored on dataAddress.properties."
+      (propertiesChange)="onDataAddressPropertiesChange($event)"
+    ></europeana-dcat-resource-properties>
   </div>
 
   <div class="2xl:col-span-2 flex flex-col items-center">
