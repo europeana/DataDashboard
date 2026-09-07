@@ -31,3 +31,11 @@ export { EuropeanaContractDefinitionsViewComponent } from './contract-definition
 /* Customized catalog related classes */
 export { EuropeanaCatalogCardComponent } from './catalog/europeana-catalog-card.component';
 export { EuropeanaCatalogViewComponent } from './catalog/europeana-catalog-view.component';
+
+/* Pluggable DCAT Resource properties field group */
+export {
+  DCAT_RESOURCE_FIELDS,
+  dcatPropertyKeys,
+  EuropeanaDcatResourcePropertiesComponent,
+} from './dcat';
+export type { DcatField } from './dcat';

@@ -1,0 +1,42 @@
+@if (form) {
+  <fieldset class="fieldset w-full bg-base-200 border border-base-300 p-4 rounded-box" [formGroup]="form">
+    <legend class="fieldset-legend text-sm">{{ title }}</legend>
+
+    @for (field of fields; track field.key) {
+      <legend class="fieldset-label">{{ field.label }}</legend>
+      @if (field.type === 'textarea') {
+        <label
+          class="textarea flex items-start tooltip tooltip-info tooltip-top w-full min-h-20"
+          [attr.data-tip]="field.tip || null"
+        >
+          @if (field.icon) {
+            <span class="material-symbols-rounded opacity-50 mt-1">{{ field.icon }}</span>
+          }
+          <textarea
+            class="grow bg-transparent border-0 outline-none resize-y min-h-16"
+            [placeholder]="field.label"
+            [formControlName]="field.key"
+            rows="3"
+          ></textarea>
+          <span class="badge badge-info">Optional</span>
+        </label>
+      } @else {
+        <label
+          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+          [attr.data-tip]="field.tip || null"
+        >
+          @if (field.icon) {
+            <span class="material-symbols-rounded opacity-50">{{ field.icon }}</span>
+          }
+          <input
+            class="grow"
+            [type]="field.type === 'date' ? 'date' : field.type === 'url' ? 'url' : 'text'"
+            [placeholder]="field.type === 'tags' ? 'keyword1, keyword2' : field.label"
+            [formControlName]="field.key"
+          />
+          <span class="badge badge-info">Optional</span>
+        </label>
+      }
+    }
+  </fieldset>
+}
