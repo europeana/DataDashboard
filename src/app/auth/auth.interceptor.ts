@@ -6,7 +6,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(AuthService);
   console.log(`[AuthInterceptor] REQUEST: ${req.method} ${req.url}`);
 
-  if (!auth.token) {
+  if (!auth.enabled || !auth.token) {
     console.log(`[AuthInterceptor] NO TOKEN: ${req.method} ${req.url}`);
 
     return next(req);

@@ -15,6 +15,8 @@
 import { MenuItem } from './menu-item';
 
 export interface KeycloakConfig {
+  /** When false, skip Keycloak login at startup. Default: true when keycloak is configured. */
+  enabled?: boolean;
   url?: string;
   realm?: string;
   clientId?: string;
