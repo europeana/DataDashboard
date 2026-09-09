@@ -54,11 +54,17 @@
         </label>
         <legend class="fieldset-label">Description</legend>
         <label
-          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
+          class="textarea flex items-start tooltip tooltip-info tooltip-top w-full min-h-20"
           data-tip="Optional free-text description of the policy"
         >
-          <span class="material-symbols-rounded opacity-50">notes</span>
-          <input type="text" class="grow" placeholder="Description" formControlName="description" name="description" />
+          <span class="material-symbols-rounded opacity-50 mt-1">notes</span>
+          <textarea
+            class="grow bg-transparent border-0 outline-none resize-y min-h-16"
+            placeholder="Description"
+            formControlName="description"
+            name="description"
+            rows="3"
+          ></textarea>
           <span class="badge badge-info">Optional</span>
         </label>
       }
