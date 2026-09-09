@@ -91,9 +91,10 @@
     <europeana-dcat-resource-properties
       class="w-lg block"
       layout="properties"
+      keyPrefix="distribution."
       [properties]="dataAddressProperties"
       title="Distributions"
-      hint="Add keys as distribution.N.propertyName (e.g. distribution.1.title, distribution.2.mediaType). Stored on dataAddress.properties."
+      hint="Enter keys as N.propertyName (e.g. 1.title, 2.mediaType). Stored as distribution.N.propertyName on dataAddress.properties."
       (propertiesChange)="onDataAddressPropertiesChange($event)"
     ></europeana-dcat-resource-properties>
   </div>

@@ -43,6 +43,12 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
   @Input() title = 'DCAT Resource';
   /** Optional help text under the title (e.g. key naming examples). */
   @Input() hint = '';
+  /**
+   * Optional prefix applied to free-form keys (Distributions only).
+   * e.g. `distribution.` so typing `1.title` stores `distribution.1.title`.
+   * Already-prefixed keys are left unchanged.
+   */
+  @Input() keyPrefix = '';
   @Input() fields: readonly DcatField[] = DCAT_FIELDS;
   @Output() propertiesChange = new EventEmitter<Record<string, JsonValue>>();
 
@@ -66,7 +72,12 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
   /** True when the add-form key already exists in properties (case-insensitive). */
   get duplicateKey(): boolean {
     const key = this.addForm.value.key?.trim();
-    return !!key && this.hasKey(key);
+    return !!key && this.hasKey(this.applyKeyPrefix(key));
+  }
+
+  /** Placeholder for the free-form key input when a prefix is configured. */
+  get keyPlaceholder(): string {
+    return this.keyPrefix ? '1.title' : 'Key';
   }
 
   /** Placeholder for the free-form value input; uses the field catalog when the key matches. */
@@ -114,7 +125,7 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
     if (!this.addForm.valid || this.duplicateKey) {
       return;
     }
-    const key = this.addForm.value.key!.trim();
+    const key = this.applyKeyPrefix(this.addForm.value.key!.trim());
     const value = this.parseValue(this.addForm.value.value!);
     this.propertiesChange.emit({ ...this.properties, [key]: value });
     this.addForm.reset();
@@ -124,6 +135,21 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
   deleteProperty(key: string): void {
     const { [key]: _, ...rest } = this.properties ?? {};
     this.propertiesChange.emit(rest);
+  }
+
+  /**
+   * Prepends {@link keyPrefix} when set and the key does not already start with it.
+   * No-op for the asset-level fields layout (prefix left empty).
+   */
+  private applyKeyPrefix(key: string): string {
+    const prefix = this.keyPrefix?.trim();
+    if (!prefix) {
+      return key;
+    }
+    if (key.toLowerCase().startsWith(prefix.toLowerCase())) {
+      return key;
+    }
+    return `${prefix}${key}`;
   }
 
   /**
