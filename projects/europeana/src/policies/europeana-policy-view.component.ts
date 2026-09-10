@@ -1,9 +1,9 @@
 import {
-  PolicyCardComponent,
   PolicyViewComponent
 } from '@eclipse-edc/dashboard-core/policies';
 import { IdResponse, PolicyDefinition } from '@think-it-labs/edc-connector-client';
 import { EuropeanaPolicyCreateComponent } from './europeana-policy-create.component';
+import { EuropeanaPolicyCardComponent } from './europeana-policy-card.component';
 import { Component } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import {
@@ -16,8 +16,14 @@ import {
 @Component({
   selector: 'europeana-policy-view',
   standalone: true,
-  imports: [AsyncPipe, FilterInputComponent, PaginationComponent, PolicyCardComponent, ItemCountSelectorComponent],
-  templateUrl: '../../../dashboard-core/policies/src/policy-view/policy-view.component.html',
+  imports: [
+    AsyncPipe,
+    FilterInputComponent,
+    PaginationComponent,
+    EuropeanaPolicyCardComponent,
+    ItemCountSelectorComponent,
+  ],
+  templateUrl: './europeana-policy-view.component.html',
   styleUrl: '../../../dashboard-core/policies/src/policy-view/policy-view.component.css',
 })
 export class EuropeanaPolicyViewComponent extends PolicyViewComponent{

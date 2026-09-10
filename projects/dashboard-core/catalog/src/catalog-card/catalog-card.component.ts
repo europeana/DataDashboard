@@ -36,9 +36,14 @@ export class CatalogCardComponent implements OnInit {
   participantId?: string;
 
   ngOnInit() {
-    this.name = this.catalogDataset?.assetId;
+    this.name = this.resolveCardTitle();
     this.version = this.catalogDataset?.dataset?.['asset:prop:version']?.[0]?.['@value'];
     this.contentType = this.catalogDataset?.dataset.mandatoryValue('edc', 'contenttype');
     this.participantId = this.catalogDataset?.participantId;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (name if present, else asset id) */
+  protected resolveCardTitle(): string {
+    return this.catalogDataset?.assetId ?? '';
   }
 }
