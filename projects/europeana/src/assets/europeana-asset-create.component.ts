@@ -132,8 +132,21 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
     address: DataAddress,
     properties: Record<string, JsonValue>,
   ): DataAddressWithProperties {
-    const next: DataAddressWithProperties = { ...address, properties };
-    if (!properties || Object.keys(properties).length === 0) {
+    // Drop flat distribution leftovers from the address so only nested `properties` carries them.
+    const cleaned = { ...(address as Record<string, unknown>) };
+    delete cleaned['properties'];
+    for (const key of Object.keys(cleaned)) {
+      if (this.isStoredAddressPropertyKey(this.toLocalAddressKey(key))) {
+        delete cleaned[key];
+      }
+    }
+
+    const ensured = this.ensureDistributionKeys(properties);
+    const next: DataAddressWithProperties = {
+      ...(cleaned as DataAddress),
+      properties: ensured,
+    };
+    if (!ensured || Object.keys(ensured).length === 0) {
       delete next.properties;
     }
     return next;
@@ -142,7 +155,7 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
   /**
    * Collect dataAddress.properties for the Distributions box.
    * EDC may return them nested under `edc:properties`, nested after compact,
-   * or flattened onto the address (e.g. `…/ns/distribution.1.title`).
+   * or flattened onto the address (e.g. `…/ns/distribution.1.title` or bare `3.title`).
    */
   private async loadDataAddressProperties(
     compactedAddress: DataAddressWithProperties,
@@ -166,7 +179,7 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
       Object.assign(collected, await this.europeanaAssetService.compactForForm(nested as never));
     }
 
-    // 3) Flat keys on the compacted address (distribution.* / format)
+    // 3) Flat keys on the compacted address (distribution.* / N.* / format)
     for (const [key, value] of Object.entries(compactedAddress as Record<string, JsonValue>)) {
       const local = this.toLocalAddressKey(key);
       if (this.isStoredAddressPropertyKey(local) && value !== undefined && value !== null) {
@@ -196,6 +209,7 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
     if (['@context', '@id', '@type', 'type', 'properties'].includes(lower)) {
       return false;
     }
-    return lower.startsWith('distribution.') || lower === 'format';
+    // Prefixed, bare index keys from older saves (`3.title`), or format
+    return lower.startsWith('distribution.') || lower === 'format' || /^\d+\./.test(key);
   }
 }

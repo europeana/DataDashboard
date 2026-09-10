@@ -57,6 +57,9 @@ const DISPLAY_NAMESPACE_PREFIXES: readonly (readonly [string, string])[] = [
 
 const JSON_LD_META_KEYS = new Set(['@context', '@id', '@type']);
 
+/** Prefixed onto free-form distribution keys before they are sent to the management API. */
+const DISTRIBUTION_KEY_PREFIX = 'distribution.';
+
 @Injectable()
 export class EuropeanaAssetService extends AssetService{
   private readonly state = inject(DashboardStateService);
@@ -122,12 +125,68 @@ export class EuropeanaAssetService extends AssetService{
   /**
    * Attaches `@context` with EDC `@vocab` always, plus schema prefixes only
    * when a property key already uses that schema (e.g. `dcterms:description`).
+   * Also normalizes dataAddress distribution keys (`3.title` → `distribution.3.title`).
    */
   private withContext(assetInput: AssetInput): AssetInput & { '@context': Record<string, string> } {
+    const normalized = this.normalizeDataAddressProperties(assetInput);
+    return {
+      ...normalized,
+      '@context': this.buildContext(normalized),
+    };
+  }
+
+  /**
+   * Collects distribution keys from nested `properties` and flat address fields,
+   * forces the `distribution.` prefix, and writes them only under `dataAddress.properties`.
+   */
+  private normalizeDataAddressProperties(assetInput: AssetInput): AssetInput {
+    const address = { ...(assetInput.dataAddress as Record<string, unknown>) };
+    const collected: Record<string, JsonValue> = {};
+
+    const nested = address['properties'];
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      Object.assign(collected, nested as Record<string, JsonValue>);
+    }
+    delete address['properties'];
+
+    for (const key of Object.keys(address)) {
+      if (!this.isDistributionLikeKey(key)) {
+        continue;
+      }
+      collected[key] = address[key] as JsonValue;
+      delete address[key];
+    }
+
+    const properties = this.ensureDistributionPrefix(collected);
+    if (Object.keys(properties).length > 0) {
+      address['properties'] = properties;
+    }
+
     return {
       ...assetInput,
-      '@context': this.buildContext(assetInput),
+      dataAddress: address as AssetInput['dataAddress'],
     };
+  }
+
+  /** `3.title` → `distribution.3.title`; leaves `format` and already-prefixed keys alone. */
+  private ensureDistributionPrefix(properties: Record<string, JsonValue>): Record<string, JsonValue> {
+    return Object.fromEntries(
+      Object.entries(properties).map(([key, value]) => {
+        const lower = key.toLowerCase();
+        if (lower === 'format' || lower.startsWith(DISTRIBUTION_KEY_PREFIX)) {
+          return [key, value];
+        }
+        return [`${DISTRIBUTION_KEY_PREFIX}${key}`, value];
+      }),
+    );
+  }
+
+  private isDistributionLikeKey(key: string): boolean {
+    const lower = key.toLowerCase();
+    if (['@context', '@id', '@type', 'type', 'properties'].includes(lower)) {
+      return false;
+    }
+    return lower === 'format' || lower.startsWith(DISTRIBUTION_KEY_PREFIX) || /^\d+\./.test(key);
   }
 
   private buildContext(assetInput: AssetInput): Record<string, string> {
