@@ -91,7 +91,7 @@
     <europeana-dcat-resource-properties
       class="w-lg block"
       layout="properties"
-      keyPrefix="distribution."
+      [keyPrefix]="distributionKeyPrefix"
       [properties]="dataAddressProperties"
       title="Distributions"
       hint="Enter keys as N.propertyName (e.g. 1.title, 2.mediaType). Stored as distribution.N.propertyName on dataAddress.properties."

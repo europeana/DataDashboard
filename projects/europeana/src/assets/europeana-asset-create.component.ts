@@ -44,6 +44,9 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
   /** Fields for the Resource Common Fields–style form. */
   readonly resourceFormFields = DCAT_FORM_FIELDS;
 
+  /** Prepended to free-form Distribution keys (e.g. `1.title` → `distribution.1.title`). */
+  readonly distributionKeyPrefix = 'distribution.';
+
   /** dataAddress.properties — same free-form UX as Properties. */
   dataAddressProperties: Record<string, JsonValue> = {};
 
@@ -79,7 +82,9 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
     const compactedAddress = (await compact(this.asset!.dataAddress)) as unknown as DataAddressWithProperties;
 
     // Load distributions before wiring dataAddress (type form may re-emit and clear them).
-    this.dataAddressProperties = await this.loadDataAddressProperties(compactedAddress);
+    this.dataAddressProperties = this.ensureDistributionKeys(
+      await this.loadDataAddressProperties(compactedAddress),
+    );
     this.dataAddress = this.withDataAddressProperties(compactedAddress, this.dataAddressProperties);
 
     this.assetForm.get('id')?.setValue(this.asset!.id);
@@ -92,7 +97,7 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
   }
 
   onDataAddressPropertiesChange(properties: Record<string, JsonValue>): void {
-    this.dataAddressProperties = properties ?? {};
+    this.dataAddressProperties = this.ensureDistributionKeys(properties ?? {});
     if (this.dataAddress) {
       this.dataAddress = this.withDataAddressProperties(this.dataAddress, this.dataAddressProperties);
     }
@@ -100,8 +105,27 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
 
   protected override createAssetInput(): AssetInput {
     const asset = super.createAssetInput();
-    asset.dataAddress = this.withDataAddressProperties(asset.dataAddress, this.dataAddressProperties);
+    const properties = this.ensureDistributionKeys(this.dataAddressProperties);
+    this.dataAddressProperties = properties;
+    asset.dataAddress = this.withDataAddressProperties(asset.dataAddress, properties);
     return asset;
+  }
+
+  /**
+   * Ensures Distribution box keys use the `distribution.` prefix.
+   * Leaves `format` and already-prefixed keys unchanged.
+   */
+  private ensureDistributionKeys(properties: Record<string, JsonValue>): Record<string, JsonValue> {
+    const prefix = this.distributionKeyPrefix;
+    return Object.fromEntries(
+      Object.entries(properties).map(([key, value]) => {
+        const lower = key.toLowerCase();
+        if (lower === 'format' || lower.startsWith(prefix.toLowerCase())) {
+          return [key, value];
+        }
+        return [`${prefix}${key}`, value];
+      }),
+    );
   }
 
   private withDataAddressProperties(
