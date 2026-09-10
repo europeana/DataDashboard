@@ -12,8 +12,8 @@ import {
 import { FormBuilder, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { JsonValue } from '@angular-devkit/core';
 import { JsonObjectTableComponent } from '@eclipse-edc/dashboard-core';
-import { Subject, takeUntil } from 'rxjs';
-import { DCAT_FIELDS, DcatField, dcatOwnedKeys } from './dcat-resource-fields';
+import { Subscription } from 'rxjs';
+import { DCAT_FIELDS, DcatField, dcatFormFields, dcatOwnedKeys } from './dcat-resource-fields';
 
 /** UI layout for the same pluggable component. */
 export type DcatPropertiesLayout = 'fields' | 'properties';
@@ -24,7 +24,8 @@ export type DcatPropertiesLayout = 'fields' | 'properties';
  * - `layout="fields"` — Common Fields style (labeled inputs)
  * - `layout="properties"` — Properties style (table + key/value add)
  *
- * Optional {@link DcatField.placeholder} only when set on a field.
+ * Pass `[fieldKeys]="['title','description']"` to pick from the shared catalog,
+ * or `[fields]` for a full field list. Optional {@link DcatField.placeholder} only when set.
  * Free-form keys are not strictly validated.
  */
 @Component({
@@ -35,7 +36,7 @@ export type DcatPropertiesLayout = 'fields' | 'properties';
 })
 export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChanges, OnDestroy {
   private readonly fb = inject(FormBuilder);
-  private readonly destroy$ = new Subject<void>();
+  private fieldsFormSub?: Subscription;
 
   @Input() properties: Record<string, JsonValue> = {};
   /** `fields` = Common Fields look; `properties` = normal Properties look. */
@@ -49,6 +50,11 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
    * Already-prefixed keys are left unchanged.
    */
   @Input() keyPrefix = '';
+  /**
+   * Keys to resolve via {@link dcatFormFields} (asset vs policy subsets).
+   * When set, overrides {@link fields}.
+   */
+  @Input() fieldKeys?: readonly string[];
   @Input() fields: readonly DcatField[] = DCAT_FIELDS;
   @Output() propertiesChange = new EventEmitter<Record<string, JsonValue>>();
 
@@ -59,9 +65,14 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
     value: new FormControl('', Validators.required),
   });
 
+  /** Active field catalog: from `fieldKeys` or `fields`. */
+  get activeFields(): readonly DcatField[] {
+    return this.fieldKeys?.length ? dcatFormFields(...this.fieldKeys) : this.fields;
+  }
+
   /** Keys owned by the configured field catalog (used to hide them from free-form tables). */
   get dcatExcludeKeys(): string[] {
-    return dcatOwnedKeys(this.fields);
+    return dcatOwnedKeys(this.activeFields);
   }
 
   /** Whether the current properties map has any entries. */
@@ -92,18 +103,15 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
 
   /** Builds the fields form and emits property updates when layout is `fields`. */
   ngOnInit(): void {
-    this.fieldsForm = this.fb.group(Object.fromEntries(this.fields.map(f => [f.key, ['']])));
-    this.loadFieldsForm(this.properties);
-
-    this.fieldsForm.valueChanges.pipe(takeUntil(this.destroy$)).subscribe(() => {
-      if (this.layout === 'fields') {
-        this.propertiesChange.emit(this.fieldsToProperties());
-      }
-    });
+    this.buildFieldsForm();
   }
 
-  /** Reloads labeled inputs when the parent updates `properties` after first change. */
+  /** Reloads labeled inputs when properties / field catalog inputs change. */
   ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['fieldKeys'] || changes['fields']) && this.fieldsForm) {
+      this.buildFieldsForm();
+      return;
+    }
     if (changes['properties'] && this.fieldsForm && !changes['properties'].firstChange) {
       this.loadFieldsForm(this.properties);
     }
@@ -111,8 +119,7 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
 
   /** Tears down valueChanges subscription. */
   ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.fieldsFormSub?.unsubscribe();
   }
 
   /** Returns a field's optional placeholder, or empty string. */
@@ -152,17 +159,29 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
     return `${prefix}${key}`;
   }
 
+  /** Creates / rebuilds the reactive form from {@link activeFields}. */
+  private buildFieldsForm(): void {
+    this.fieldsFormSub?.unsubscribe();
+    this.fieldsForm = this.fb.group(Object.fromEntries(this.activeFields.map(f => [f.key, ['']])));
+    this.loadFieldsForm(this.properties);
+    this.fieldsFormSub = this.fieldsForm.valueChanges.subscribe(() => {
+      if (this.layout === 'fields') {
+        this.propertiesChange.emit(this.fieldsToProperties());
+      }
+    });
+  }
+
   /**
    * Merges labeled field values into the properties map.
    * Preserves non-owned keys and reuses existing alias keys when present.
    */
   private fieldsToProperties(): Record<string, JsonValue> {
-    const owned = new Set(dcatOwnedKeys(this.fields).map(k => k.toLowerCase()));
+    const owned = new Set(dcatOwnedKeys(this.activeFields).map(k => k.toLowerCase()));
     const rest = Object.fromEntries(
       Object.entries(this.properties ?? {}).filter(([k]) => !owned.has(k.toLowerCase())),
     );
 
-    for (const field of this.fields) {
+    for (const field of this.activeFields) {
       const raw = this.fieldsForm.get(field.key)?.value;
       if (typeof raw !== 'string' || !raw.trim()) {
         continue;
@@ -180,7 +199,7 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
     }
     const source = properties ?? {};
     const patch: Record<string, string> = {};
-    for (const field of this.fields) {
+    for (const field of this.activeFields) {
       const match = this.findPropertyEntry(source, field);
       patch[field.key] = match ? this.toInputString(match.value, field) : '';
     }
@@ -211,7 +230,7 @@ export class EuropeanaDcatResourcePropertiesComponent implements OnInit, OnChang
   /** Resolves a free-form key name to a catalog field via key or aliases. */
   private findField(name: string): DcatField | undefined {
     const lower = name.toLowerCase();
-    return this.fields.find(
+    return this.activeFields.find(
       f => f.key.toLowerCase() === lower || f.aliases?.some(a => a.toLowerCase() === lower),
     );
   }

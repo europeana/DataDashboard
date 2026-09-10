@@ -15,8 +15,8 @@ import {
   DataAddress,
 } from '@think-it-labs/edc-connector-client';
 import { JsonValue } from '@angular-devkit/core';
+import { dcatFormFields, dcatOwnedKeys, EuropeanaDcatResourcePropertiesComponent } from '../dcat';
 import { EuropeanaAssetService } from './europeana-asset.service';
-import { DCAT_FORM_FIELDS, dcatOwnedKeys, EuropeanaDcatResourcePropertiesComponent } from '../dcat';
 
 type DataAddressWithProperties = DataAddress & {
   properties?: Record<string, JsonValue>;
@@ -41,8 +41,8 @@ type DataAddressWithProperties = DataAddress & {
 export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
   private readonly europeanaAssetService = inject(EuropeanaAssetService);
 
-  /** Fields for the Resource Common Fields–style form. */
-  readonly resourceFormFields = DCAT_FORM_FIELDS;
+  /** Keys for Resource common fields — resolved from DCAT_FORM_FIELDS catalog in the template. */
+  readonly resourceFieldKeys = ['title', 'description', 'publisher'] as const;
 
   /** Prepended to free-form Distribution keys (e.g. `1.title` → `distribution.1.title`). */
   readonly distributionKeyPrefix = 'distribution.';
@@ -51,7 +51,13 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
   dataAddressProperties: Record<string, JsonValue> = {};
 
   get propertiesExcludeKeys(): string[] {
-    return ['@context', 'id', 'name', 'contenttype', ...dcatOwnedKeys(DCAT_FORM_FIELDS)];
+    return [
+      '@context',
+      'id',
+      'name',
+      'contenttype',
+      ...dcatOwnedKeys(dcatFormFields(...this.resourceFieldKeys)),
+    ];
   }
 
   override get formTitle(): string {

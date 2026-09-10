@@ -233,19 +233,44 @@ export const DCAT_FIELDS: readonly DcatField[] = [
 ];
 
 /**
- * Fields shown in the asset Resource form (Common Fields style).
- * Full {@link DCAT_FIELDS} remains the reference catalog; free-form editors
- * do not strictly validate keys against it.
+ * Extra form-only fields (e.g. EDC `name`) not listed on DCAT Resource class.
+ * Combined with {@link DCAT_FIELDS} when resolving {@link dcatFormFields}.
  */
-const FORM_FIELD_KEYS = ['title', 'description', 'publisher'] as const;
+const EXTRA_FORM_FIELDS: readonly DcatField[] = [
+  {
+    key: 'name',
+    label: 'Name',
+    tip: 'Can be filtered by and could be used as e.g. display name',
+    icon: 'assignment_ind',
+    aliases: ['Name'],
+  },
+];
 
-export const DCAT_FORM_FIELDS: readonly DcatField[] = FORM_FIELD_KEYS.map(key => {
-  const field = DCAT_FIELDS.find(f => f.key === key);
-  if (!field) {
-    throw new Error(`DCAT_FORM_FIELDS: missing '${key}' in DCAT_FIELDS`);
-  }
-  return field;
-});
+/**
+ * Picks labeled form fields by key from the shared catalog ({@link DCAT_FIELDS} + extras).
+ * Use from asset/policy templates to choose different subsets, e.g.
+ * `dcatFormFields('title', 'description', 'publisher')` vs `dcatFormFields('name', 'description')`.
+ */
+export function dcatFormFields(...keys: string[]): readonly DcatField[] {
+  return keys.map(key => {
+    const field =
+      EXTRA_FORM_FIELDS.find(f => f.key === key) ?? DCAT_FIELDS.find(f => f.key === key);
+    if (!field) {
+      throw new Error(`dcatFormFields: unknown field '${key}'`);
+    }
+    return field;
+  });
+}
+
+/**
+ * Default asset Resource form fields (Common Fields style).
+ * Prefer {@link dcatFormFields} / `[fieldKeys]` when a screen needs a different subset.
+ */
+export const DCAT_FORM_FIELDS: readonly DcatField[] = dcatFormFields(
+  'title',
+  'description',
+  'publisher',
+);
 
 /** Primary keys — use to exclude from free-form property editors. */
 export function dcatPropertyKeys(fields: readonly DcatField[] = DCAT_FIELDS): string[] {

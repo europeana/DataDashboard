@@ -45,11 +45,11 @@
       </label>
     </fieldset>
 
-    <!-- Asset-level: Common Fields look (title, description, publisher, keyword) -->
+    <!-- Asset-level: pick fields from DCAT_FORM_FIELDS catalog via fieldKeys -->
     <europeana-dcat-resource-properties
       class="w-lg block"
       layout="fields"
-      [fields]="resourceFormFields"
+      [fieldKeys]="resourceFieldKeys"
       [properties]="properties"
       title="Resource common fields"
       (propertiesChange)="properties = $event"

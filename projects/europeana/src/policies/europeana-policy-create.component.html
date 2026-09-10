@@ -1,0 +1,146 @@
+<!--
+  Europeana policy create/edit — Name / Description via pluggable fields component;
+  stored as public properties.
+-->
+
+<form
+  [formGroup]="policyForm"
+  (ngSubmit)="mode === 'update' ? editPolicyDefinition() : createPolicyDefinition()"
+  class="grid grid-cols-1 gap-4 items-start overflow-y-auto h-full [&_label]:shrink-0"
+>
+  <h1 class="text-xl text-center divider m-0">{{ formTitle }}</h1>
+  <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">Common Fields</legend>
+      <legend class="fieldset-label">ID</legend>
+      <label
+        class="input input-bordered !border-[var(--input-color)] flex items-center tooltip tooltip-info tooltip-top w-full"
+        data-tip="If not set a random UUID will be generated"
+      >
+        <span class="material-symbols-rounded opacity-50">deployed_code_update</span>
+        <input
+          type="text"
+          class="grow"
+          placeholder="ID"
+          formControlName="id"
+          name="id"
+          [readonly]="mode === 'update'"
+        />
+        @if (mode === 'create') {
+          <span class="badge badge-info">Optional</span>
+        } @else {
+          <span class="badge badge-warning">Readonly</span>
+        }
+      </label>
+
+      <legend class="fieldset-label">Policy-Type</legend>
+      <label class="select w-full" [ngClass]="policyForm.get('policyType')?.invalid ? 'select-error' : ''">
+        <span class="label">Type</span>
+        <select formControlName="policyType" name="policyType" required>
+          <option [ngValue]="undefined" disabled>Select a type</option>
+          <option [ngValue]="'Set'">Set</option>
+          <option [ngValue]="'Offer'">Offer</option>
+          <option [ngValue]="'Contract'">Contract</option>
+        </select>
+      </label>
+      @if (policyForm.get('policyType')?.invalid) {
+        <p class="fieldset-label text-error">Mandatory</p>
+      }
+    </fieldset>
+
+    <europeana-dcat-resource-properties
+      class="w-lg block"
+      layout="fields"
+      [fieldKeys]="policyFieldKeys"
+      [properties]="properties"
+      title="Resource common fields"
+      (propertiesChange)="properties = $event"
+    ></europeana-dcat-resource-properties>
+  </div>
+
+  <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">{{ propertiesSectionTitle }}</legend>
+      <legend class="fieldset-label">Permissions</legend>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Permissions"
+          formControlName="permissionsJson"
+          rows="4"
+        ></textarea>
+      </div>
+      <legend class="fieldset-label">Prohibitions</legend>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Prohibitions"
+          formControlName="prohibitionsJson"
+          rows="4"
+        ></textarea>
+      </div>
+      <legend class="fieldset-label">Obligations</legend>
+      <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
+        <div class="flex items-center justify-between mb-1">
+          <span class="material-symbols-rounded opacity-50 text-sm">file_json</span>
+          <span class="badge badge-info">Optional</span>
+        </div>
+        <textarea
+          class="textarea textarea-bordered w-full font-mono text-sm min-h-24"
+          placeholder="Obligations"
+          formControlName="obligationsJson"
+          rows="4"
+        ></textarea>
+      </div>
+    </fieldset>
+
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">Properties</legend>
+      <lib-json-object-input
+        [object]="properties"
+        [excludeKeys]="publicPropertiesExcludeKeys"
+        (objectChange)="properties = $event"
+      >
+      </lib-json-object-input>
+    </fieldset>
+
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">Private Properties</legend>
+      <lib-json-object-input
+        [object]="privateProperties"
+        [excludeKeys]="['@context', 'name', 'Name', 'description', 'Description']"
+        (objectChange)="privateProperties = $event"
+      >
+      </lib-json-object-input>
+    </fieldset>
+  </div>
+
+  <div class="flex flex-col items-center">
+    <div class="divider mt-0"></div>
+    @if (errorMsg) {
+      <lib-alert title="Error" [msg]="errorMsg" (closeEvent)="errorMsg = ''" type="error" class="w-lg mb-4"></lib-alert>
+    }
+    <button
+      type="submit"
+      [disabled]="policyForm.invalid"
+      class="btn btn-lg w-lg"
+      [ngClass]="mode === 'update' ? 'btn-warning' : 'btn-primary'"
+    >
+      @if (mode === 'update') {
+        <i class="material-symbols-rounded">update</i>
+        Update Policy
+      } @else {
+        <i class="material-symbols-rounded">add</i>
+        Create Policy
+      }
+    </button>
+  </div>
+</form>

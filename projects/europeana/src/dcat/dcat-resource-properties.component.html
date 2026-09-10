@@ -6,7 +6,7 @@
 
   @if (layout === 'fields' && fieldsForm) {
     <div [formGroup]="fieldsForm">
-      @for (field of fields; track field.key) {
+      @for (field of activeFields; track field.key) {
         <legend class="fieldset-label">{{ field.label }}</legend>
         @if (field.type === 'textarea') {
           <label
