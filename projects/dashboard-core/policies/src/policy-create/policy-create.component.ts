@@ -142,10 +142,9 @@ export class PolicyCreateComponent implements OnChanges {
     });
   }
 
-  /* CORE HACK : make method protected; include optional name/description for Europeana common fields */
+  /* CORE HACK : make method protected; subclasses may enrich the payload (e.g. properties) */
   protected createPolicyInput(): PolicyDefinitionInput {
-    const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson, name, description } =
-      this.policyForm.value;
+    const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson } = this.policyForm.value;
 
     const policyInput: PolicyInput = { '@type': policyType };
     this.assignJsonRule(policyInput, 'permission', permissionsJson, 'Permissions');
@@ -157,16 +156,10 @@ export class PolicyCreateComponent implements OnChanges {
       .raw(policyInput)
       .build();
 
-    const policyDefinitionInput: PolicyDefinitionInput & { name?: string; description?: string } = { policy };
+    const policyDefinitionInput: PolicyDefinitionInput = { policy };
     if (id) {
       policyDefinitionInput.id = id;
       policyDefinitionInput['@id'] = id;
-    }
-    if (typeof name === 'string' && name.trim()) {
-      policyDefinitionInput.name = name.trim();
-    }
-    if (typeof description === 'string' && description.trim()) {
-      policyDefinitionInput.description = description.trim();
     }
 
     return policyDefinitionInput;

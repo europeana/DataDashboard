@@ -81,7 +81,7 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
 
   /**
    * Override createPolicyInput to attach public / private property maps.
-   * Name / Description are merged into `properties` (asset pattern) and sent as top-level fields by core.
+   * Name / Description are stored only under `properties` (not top-level).
    * @protected
    */
   protected override createPolicyInput(): EuropeanaPolicyDefinitionInput {
@@ -94,12 +94,11 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent{
       properties['description'] = description.trim();
     }
 
-    const input: EuropeanaPolicyDefinitionInput = {
+    return {
       ...super.createPolicyInput(),
       properties,
       privateProperties: this.toPrivatePropertiesPayload(),
     };
-    return input;
   }
 
   /**

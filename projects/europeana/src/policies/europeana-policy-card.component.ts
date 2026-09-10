@@ -10,23 +10,41 @@ import { PolicyCardComponent } from '@eclipse-edc/dashboard-core/policies';
 })
 export class EuropeanaPolicyCardComponent extends PolicyCardComponent {
   /**
-   * Card title: `edc:name` on the definition when present;
-   * otherwise the policy ID (core default).
+   * Card title: name from the definition (top-level or properties), else policy ID.
    */
   override get cardTitle(): string {
-    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', 'name');
+    return this.readString('name')
+      ?? this.policyDefinition?.['@id']
+      ?? this.policyDefinition?.id
+      ?? '';
+  }
+
+  /**
+   * Card description from the definition (top-level or properties).
+   * Truncated to 2 lines in the shared card template via `line-clamp-2`.
+   */
+  override get cardDescription(): string | undefined {
+    return this.readString('description');
+  }
+
+  /**
+   * Reads a string field the same way the policy form does:
+   * 1) top-level `edc:<key>`
+   * 2) nested `edc:properties` → `edc:<key>`
+   */
+  private readString(key: string): string | undefined {
+    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', key);
     if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
       return fromDefinition.trim();
     }
 
-    return this.policyDefinition?.['@id'] ?? this.policyDefinition?.id ?? '';
-  }
+    const fromProperties = this.policyDefinition
+      ?.nested('edc', 'properties')
+      ?.optionalValue<string>('edc', key);
+    if (typeof fromProperties === 'string' && fromProperties.trim()) {
+      return fromProperties.trim();
+    }
 
-  /** Card description: `edc:description` on the definition when present. */
-  override get cardDescription(): string | undefined {
-    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', 'description');
-    return typeof fromDefinition === 'string' && fromDefinition.trim()
-      ? fromDefinition.trim()
-      : undefined;
+    return undefined;
   }
 }
