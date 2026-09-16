@@ -10,11 +10,11 @@ import {
   CatalogDataset,
   CatalogRequestComponent,
   CatalogViewComponent,
-  ContractNegotiationComponent,
   NegotiationProgressComponent,
 } from '@eclipse-edc/dashboard-core/catalog';
 import { IdResponse } from '@think-it-labs/edc-connector-client';
 import { EuropeanaCatalogCardComponent } from './europeana-catalog-card.component';
+import { EuropeanaContractNegotiationComponent } from './europeana-contract-negotiation.component';
 
 @Component({
   selector: 'europeana-catalog-view',
@@ -40,7 +40,7 @@ export class EuropeanaCatalogViewComponent extends CatalogViewComponent {
       },
     };
     this.modal.openModal(
-      ContractNegotiationComponent,
+      EuropeanaContractNegotiationComponent,
       { catalogDataset, showCatalogDetailsSection: false },
       callbacks,
     );

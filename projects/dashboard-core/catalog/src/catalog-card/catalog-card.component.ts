@@ -16,6 +16,13 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { CatalogDataset } from '../catalog-dataset';
 
+/** Optional labeled row shown under the catalog card title. */
+export interface CatalogCardField {
+  label: string;
+  value: string;
+  icon?: string;
+}
+
 @Component({
   selector: 'lib-catalog-card',
   standalone: true,
@@ -45,5 +52,15 @@ export class CatalogCardComponent implements OnInit {
   /* CORE HACK : hook for Europeana subclasses (name if present, else asset id) */
   protected resolveCardTitle(): string {
     return this.catalogDataset?.assetId ?? '';
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (description from dataset) */
+  get cardDescription(): string | undefined {
+    return undefined;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (extra dataset fields) */
+  get cardFields(): CatalogCardField[] {
+    return [];
   }
 }

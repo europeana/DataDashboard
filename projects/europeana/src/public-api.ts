@@ -31,6 +31,7 @@ export { EuropeanaContractDefinitionsViewComponent } from './contract-definition
 /* Customized catalog related classes */
 export { EuropeanaCatalogCardComponent } from './catalog/europeana-catalog-card.component';
 export { EuropeanaCatalogViewComponent } from './catalog/europeana-catalog-view.component';
+export { EuropeanaContractNegotiationComponent } from './catalog/europeana-contract-negotiation.component';
 
 /* Pluggable DCAT properties field group */
 export {

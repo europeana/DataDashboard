@@ -51,7 +51,8 @@ export class ContractNegotiationComponent implements OnChanges {
     }
   }
 
-  private async loadDataset() {
+  /* CORE HACK : protected for Europeana subclasses */
+  protected async loadDataset() {
     if (this.catalogDataset) {
       try {
         this.dataset = await compact(this.catalogDataset.dataset);

@@ -57,9 +57,10 @@
 
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Data Address</legend>
-      <!-- EDITED: uses onDataAddressChange to preserve nested properties -->
+      <!-- TODO: remove [dataType] when connector exposes allowed source types again -->
       <lib-data-address-form
         [parentForm]="assetForm"
+        [dataType]="'HttpData'"
         [dataAddress]="dataAddress"
         (dataAddressChange)="onDataAddressChange($event)"
       ></lib-data-address-form>
