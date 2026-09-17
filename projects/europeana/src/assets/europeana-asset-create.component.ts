@@ -16,6 +16,7 @@ import {
 } from '@think-it-labs/edc-connector-client';
 import { JsonValue } from '@angular-devkit/core';
 import { dcatFormFields, dcatOwnedKeys, EuropeanaDcatResourcePropertiesComponent } from '../dcat';
+import { optionalLocalValue } from '../jsonld/optional-local-value';
 import { EuropeanaAssetService } from './europeana-asset.service';
 
 type DataAddressWithProperties = DataAddress & {
@@ -64,20 +65,19 @@ export class EuropeanaAssetCreateComponent extends AssetCreateComponent {
     if (!this.asset) {
       return 'Asset';
     }
-    const name = this.getAssetName();
-    return name || this.asset.id;
+    return this.readTitleProp('name') ?? this.readTitleProp('title') ?? this.asset.id;
   }
 
-  private getAssetName(): string | undefined {
-    const fromProperties = this.asset?.properties?.optionalValue<string>('edc', 'name');
+  private readTitleProp(key: string): string | undefined {
+    const fromProperties = this.asset?.properties?.optionalValue<string>('edc', key);
     if (typeof fromProperties === 'string' && fromProperties.trim()) {
       return fromProperties.trim();
     }
-    const fromCompact = this.properties['name'];
+    const fromCompact = this.properties[key];
     if (typeof fromCompact === 'string' && fromCompact.trim()) {
       return fromCompact.trim();
     }
-    return undefined;
+    return optionalLocalValue(this.asset?.properties as Record<string, unknown> | undefined, key);
   }
 
   protected override async updateAssetAndSyncForm() {
