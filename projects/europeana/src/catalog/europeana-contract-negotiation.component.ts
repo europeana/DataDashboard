@@ -1,15 +1,16 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgClass } from '@angular/common';
+import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AlertComponent, JsonObjectTableComponent } from '@eclipse-edc/dashboard-core';
 import { ContractNegotiationComponent } from '@eclipse-edc/dashboard-core/catalog';
+import { JsonValue } from '@angular-devkit/core';
 import { Policy } from '@think-it-labs/edc-connector-client/dist/src/entities/policy';
-import { optionalLocalValue } from '../jsonld/optional-local-value';
+import { optionalLocalValue, withLocalKeys } from '../jsonld/optional-local-value';
 
 @Component({
   selector: 'europeana-catalog-negotiation',
   standalone: true,
-  imports: [FormsModule, AlertComponent, JsonObjectTableComponent, NgClass, AsyncPipe],
+  imports: [FormsModule, AlertComponent, JsonObjectTableComponent, NgClass],
   templateUrl: './europeana-contract-negotiation.component.html',
 })
 export class EuropeanaContractNegotiationComponent extends ContractNegotiationComponent {
@@ -18,7 +19,10 @@ export class EuropeanaContractNegotiationComponent extends ContractNegotiationCo
     return this.distributions.length > 0;
   }
 
-  /** Label for an offer: properties.name → properties.title → `Offer N`. */
+  /** Description shown in Selected Offer (instead of policy JSON). */
+  selectedOfferDescription = '';
+
+  /** Label for an offer: name → title → `Offer N`. */
   offerLabel(offerKey: string): string {
     const policy = this.catalogDataset?.offers.get(offerKey);
     if (!policy) {
@@ -35,10 +39,24 @@ export class EuropeanaContractNegotiationComponent extends ContractNegotiationCo
     return `Offer ${offerKey}`;
   }
 
+  /** Show hasPolicy description in Selected Offer. */
+  override async showOfferDetails(selectedOfferId: string) {
+    const policy = this.catalogDataset.offers.get(selectedOfferId);
+    this.selectedOfferDescription = policy
+      ? this.readPolicyString(policy, 'description') ?? ''
+      : '';
+  }
+
   protected override async loadDataset() {
     await super.loadDataset();
+    // Display keys as local names (e.g. dct:description / full IRI → description)
+    this.dataset = withLocalKeys(this.dataset) as Record<string, JsonValue>;
+    this.distributions = this.distributions.map(
+      d => withLocalKeys(d) as Record<string, JsonValue>,
+    );
     if (!this.hasDistributions) {
       this.offerId = '';
+      this.selectedOfferDescription = '';
       this.selectedOffer.next(['']);
     }
   }
@@ -51,23 +69,8 @@ export class EuropeanaContractNegotiationComponent extends ContractNegotiationCo
     super.startNegotiation();
   }
 
-  /** Reads hasPolicy → properties → name/title (also top-level edc: if present). */
+  /** Reads name/title/description on hasPolicy. Offers are plain objects (no optionalValue). */
   private readPolicyString(policy: Policy, key: string): string | undefined {
-    const fromTop = policy.optionalValue<string>('edc', key);
-    if (typeof fromTop === 'string' && fromTop.trim()) {
-      return fromTop.trim();
-    }
-
-    const nested = policy.nested('edc', 'properties');
-    const fromProps = nested?.optionalValue<string>('edc', key);
-    if (typeof fromProps === 'string' && fromProps.trim()) {
-      return fromProps.trim();
-    }
-
-    const local =
-      optionalLocalValue(nested as unknown as Record<string, unknown>, key) ??
-      optionalLocalValue(policy as unknown as Record<string, unknown>, key);
-    const trimmed = local?.trim();
-    return trimmed || undefined;
+    return optionalLocalValue(policy as unknown as Record<string, unknown>, key) || undefined;
   }
 }

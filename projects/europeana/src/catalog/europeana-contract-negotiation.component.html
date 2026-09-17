@@ -25,8 +25,7 @@
           '@context',
           '@type',
           'distribution',
-          'http://www.w3.org/ns/dcat#distribution',
-          'http://www.w3.org/ns/odrl/2/hasPolicy',
+          'hasPolicy',
           'name',
           'id',
         ]"
@@ -39,7 +38,7 @@
         <lib-json-object-table
           class="mx-auto"
           [object]="distribution"
-          [excludeKeys]="['@context', '@type', 'accessService', 'http://www.w3.org/ns/dcat#accessService']"
+          [excludeKeys]="['@context', '@type', 'accessService']"
           [deleteButton]="false"
         ></lib-json-object-table>
       </fieldset>
@@ -90,11 +89,11 @@
       @if (!hasDistributions) {
         <div class="text-center text-sm text-base-content mt-10 opacity-50">No distribution available</div>
       } @else if (offerId) {
-        <div class="mockup-code overflow-auto">
-          @for (line of selectedOffer | async; let i = $index; track i) {
-            <pre [attr.data-prefix]="i + 1"><code class="compact text-xs">{{ line }}</code></pre>
-          }
-        </div>
+        @if (selectedOfferDescription) {
+          <p class="text-sm whitespace-pre-wrap p-2">{{ selectedOfferDescription }}</p>
+        } @else {
+          <div class="text-center text-sm text-base-content mt-10 opacity-50">No description available</div>
+        }
       } @else {
         <div class="text-center text-sm text-base-content mt-10 opacity-50">No offer has been selected</div>
       }

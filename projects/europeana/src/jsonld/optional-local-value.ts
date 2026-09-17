@@ -21,12 +21,14 @@ export function jsonLdString(raw: unknown): string | undefined {
   if (typeof raw === 'number' || typeof raw === 'boolean') {
     return String(raw);
   }
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+    const node = raw as Record<string, unknown>;
+    return jsonLdString(node['@value'] ?? node['@id']);
+  }
   if (!Array.isArray(raw) || raw.length === 0) {
     return undefined;
   }
-  return jsonLdString(raw[0] && typeof raw[0] === 'object'
-    ? ((raw[0] as Record<string, unknown>)['@value'] ?? (raw[0] as Record<string, unknown>)['@id'] ?? raw[0])
-    : raw[0]);
+  return jsonLdString(raw[0]);
 }
 
 /**
@@ -49,4 +51,19 @@ export function optionalLocalValue(object: Record<string, unknown> | undefined |
     }
   }
   return undefined;
+}
+
+/** Rebuilds an object with IRI/prefix keys reduced to local names (first wins). */
+export function withLocalKeys<T extends Record<string, unknown>>(object: T): Record<string, T[keyof T]> {
+  const out: Record<string, T[keyof T]> = {};
+  for (const [key, value] of Object.entries(object)) {
+    if (typeof value === 'function') {
+      continue;
+    }
+    const local = localName(key) || key;
+    if (!(local in out)) {
+      out[local] = value as T[keyof T];
+    }
+  }
+  return out;
 }
