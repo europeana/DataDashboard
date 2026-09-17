@@ -71,7 +71,7 @@
                 required
                 (click)="showOfferDetails(key)"
               />
-              <span class="flex-1 text-base-content peer-checked:font-medium">Offer {{ key }}</span>
+              <span class="flex-1 text-base-content peer-checked:font-medium">{{ offerLabel(key) }}</span>
             </label>
           </div>
           @if (!last) {
