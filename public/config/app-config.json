@@ -3,7 +3,7 @@
   "enableUserConfig": false,
   "appTitle": "EDC Dashboard",
   "keycloak": {
-    "enabled": true,
+    "enabled": false,
     "url": "https://keycloak.test.eanadev.org/auth",
     "realm": "europeana",
     "clientId": "edc-dashboard"
