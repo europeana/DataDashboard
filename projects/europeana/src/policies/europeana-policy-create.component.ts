@@ -7,6 +7,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AlertComponent, JsonObjectInputComponent } from '@eclipse-edc/dashboard-core';
 import { NgClass } from '@angular/common';
 import { dcatFormFields, dcatOwnedKeys, EuropeanaDcatResourcePropertiesComponent } from '../dcat';
+import { withLocalKeys } from '../jsonld/optional-local-value';
 
 @Component({
   selector: 'europeana-policy-create',
@@ -118,7 +119,9 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
 
   private async loadPublicProperties(): Promise<Record<string, JsonValue>> {
     const props = this.policyDefinition!.nested('edc', 'properties');
-    return (await compact(props)) as Record<string, JsonValue>;
+    const compacted = (await compact(props)) as Record<string, JsonValue>;
+    // Strip IRI / CURIE prefixes for form display (e.g. dct:description → description)
+    return withLocalKeys(compacted) as Record<string, JsonValue>;
   }
 
   /** Omits JSON-LD metadata; keeps name / description from the fields component. */
@@ -139,7 +142,8 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
 
   private async loadPrivateProperties(): Promise<Record<string, JsonValue>> {
     const props = this.policyDefinition!.nested('edc', 'privateProperties');
-    return (await compact(props)) as Record<string, JsonValue>;
+    const compacted = (await compact(props)) as Record<string, JsonValue>;
+    return withLocalKeys(compacted) as Record<string, JsonValue>;
   }
 
   private toPrivatePropertiesPayload(): Record<string, JsonValue> {
