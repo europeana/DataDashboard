@@ -23,8 +23,8 @@ import { withLocalKeys } from '../jsonld/optional-local-value';
   styleUrl: '../../../dashboard-core/policies/src/policy-create/policy-create.component.css',
 })
 export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
-  /** Keys for Name / Description — resolved from shared DCAT form catalog in the template. */
-  readonly policyFieldKeys = ['name', 'description'] as const;
+  /** Keys for Name / Title / Description — resolved from shared DCAT form catalog in the template. */
+  readonly policyFieldKeys = ['name', 'title', 'description'] as const;
 
   override get formTitle(): string {
     if (!this.policyDefinition) {
@@ -53,19 +53,15 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
   }
 
   /**
-   * Display name: properties map (form), then top-level `edc:name` on older definitions.
+   * Display name: properties map (name → title), then top-level on older definitions.
    */
   private getPolicyName(): string | undefined {
-    const fromProperties = this.properties?.['name'];
-    if (typeof fromProperties === 'string' && fromProperties.trim()) {
-      return fromProperties.trim();
-    }
-
-    const fromDefinition = this.policyDefinition?.optionalValue<string>('edc', 'name');
-    if (typeof fromDefinition === 'string' && fromDefinition.trim()) {
-      return fromDefinition.trim();
-    }
-    return undefined;
+    return (
+      this.readPropertyString('name') ??
+      this.readPropertyString('title') ??
+      this.readDefinitionString('name') ??
+      this.readDefinitionString('title')
+    );
   }
 
   override async ngOnChanges() {
@@ -90,12 +86,12 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
   }
 
   /**
-   * Older policies may still have top-level `edc:name` / `edc:description`.
+   * Older policies may still have top-level `edc:name` / `edc:title` / `edc:description`.
    * Copy them into the properties map so the pluggable fields form can show them.
    */
   private mergeTopLevelNameDescriptionIntoProperties(): void {
     const next = { ...this.properties };
-    for (const key of ['name', 'description'] as const) {
+    for (const key of this.policyFieldKeys) {
       if (this.readPropertyString(key)) {
         continue;
       }
@@ -147,7 +143,17 @@ export class EuropeanaPolicyCreateComponent extends PolicyCreateComponent {
   }
 
   private toPrivatePropertiesPayload(): Record<string, JsonValue> {
-    const omit = new Set(['@context', '@id', '@type', 'name', 'Name', 'description', 'Description']);
+    const omit = new Set([
+      '@context',
+      '@id',
+      '@type',
+      'name',
+      'Name',
+      'title',
+      'Title',
+      'description',
+      'Description',
+    ]);
     return Object.fromEntries(
       Object.entries(this.privateProperties ?? {}).filter(([key]) => !omit.has(key)),
     );

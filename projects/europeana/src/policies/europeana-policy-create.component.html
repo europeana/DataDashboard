@@ -1,5 +1,5 @@
 <!--
-  Europeana policy create/edit — Name / Description via pluggable fields component;
+  Europeana policy create/edit — Name / Title / Description via pluggable fields component;
   stored as public properties.
 -->
 
@@ -116,7 +116,7 @@
       <legend class="fieldset-legend text-sm">Private Properties</legend>
       <lib-json-object-input
         [object]="privateProperties"
-        [excludeKeys]="['@context', 'name', 'Name', 'description', 'Description']"
+        [excludeKeys]="['@context', 'name', 'Name', 'title', 'Title', 'description', 'Description']"
         (objectChange)="privateProperties = $event"
       >
       </lib-json-object-input>
