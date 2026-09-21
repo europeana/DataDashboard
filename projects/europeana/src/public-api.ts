@@ -21,7 +21,7 @@ export { EuropeanaPolicyCreateComponent } from './policies/europeana-policy-crea
 export { EuropeanaPolicyViewComponent } from './policies/europeana-policy-view.component';
 export { EuropeanaPolicyCardComponent } from './policies/europeana-policy-card.component';
 
-export { provideEuropeanaDashboard } from './provide-europeana-dashboard';
+export { provideEuropeanaDashboard } from './europeana-dashboard-provider';
 
 /* Customized contract-definition related classes */
 export { EuropeanaContractDefinitionCreateComponent } from './contract-definitions/europeana-contract-definition-create.component';

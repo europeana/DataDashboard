@@ -3,9 +3,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import {
   AlertComponent,
   DataAddressFormComponent,
-  DataTypeInputComponent,
   JsonObjectInputComponent,
-  JsonObjectTableComponent,
 } from '@eclipse-edc/dashboard-core';
 import { NgClass } from '@angular/common';
 import { AssetCreateComponent } from '@eclipse-edc/dashboard-core/assets';
@@ -29,9 +27,7 @@ type DataAddressWithProperties = DataAddress & {
   imports: [
     ReactiveFormsModule,
     AlertComponent,
-    JsonObjectTableComponent,
     NgClass,
-    DataTypeInputComponent,
     JsonObjectInputComponent,
     DataAddressFormComponent,
     EuropeanaDcatResourcePropertiesComponent,
