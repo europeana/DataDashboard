@@ -38,6 +38,13 @@ import { ConsoleLogger } from '@angular/compiler-cli';
 export class EuropeanaCatalogViewComponent extends CatalogViewComponent {
   private readonly modal = inject(ModalAndAlertService);
 
+  private readonly excludedProperties = [
+    '@id',
+    '@type',
+    'http://www.w3.org/ns/odrl/2/hasPolicy',
+    'http://www.w3.org/ns/dcat#distribution',
+  ];
+
   override negotiateContract(catalogDataset: CatalogDataset) {
     const callbacks = {
       negotiationRequested: (id: IdResponse) => {
@@ -91,7 +98,7 @@ export class EuropeanaCatalogViewComponent extends CatalogViewComponent {
   private matchesDatasetProperties(dataset: Dataset, searchText: string): boolean {
     console.log('Checking dataset properties for match:', dataset, searchText);
     return Object.entries(dataset).some(([key, value]) => {
-      if (key === '@id' || key === '@type') {
+      if (this.excludedProperties.includes(key)) {
         return false;
       }
 
