@@ -200,7 +200,7 @@
         }
       }
     },
-    "@europeana/dashboard": {
+    "@europeana/dsp-dashboard": {
       "projectType": "library",
       "root": "projects/europeana",
       "sourceRoot": "projects/europeana/src",

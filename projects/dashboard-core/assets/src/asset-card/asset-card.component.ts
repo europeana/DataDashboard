@@ -34,6 +34,12 @@ export class AssetCardComponent implements OnChanges {
   type?: string;
   contentType?: string;
 
+  /* CORE HACK : hook for Europeana subclasses (name if present, else id) */
+   
+  get cardTitle(): string {
+    return this.asset?.id ?? '';
+  }
+
   ngOnChanges() {
     this.name = this.asset?.properties.optionalValue('edc', 'name');
     this.contentType = this.asset?.properties.optionalValue('edc', 'contenttype');

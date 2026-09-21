@@ -37,6 +37,12 @@ export class PolicyCardComponent implements OnChanges {
   hasProhibitions = false;
   hasObligations = false;
 
+  /* CORE HACK : hook for Europeana subclasses (name if present, else id) */
+   
+  get cardTitle(): string {
+    return this.policyDefinition?.['@id'] ?? this.policyDefinition?.id ?? '';
+  }
+
   ngOnChanges() {
     this.id = this.policyDefinition?.id;
     this.policy = this.policyDefinition?.policy;

@@ -7,7 +7,7 @@
     "paths": {
       "@eclipse-edc/dashboard-core": ["./dist/@eclipse-edc/dashboard-core"],
       "@eclipse-edc/dashboard-core/*": ["./dist/@eclipse-edc/dashboard-core/*"],
-      "@europeana/dashboard": ["./dist/@europeana/dashboard"]
+      "@europeana/dsp-dashboard": ["./dist/@europeana/dsp-dashboard"]
     },
     "outDir": "./dist/out-tsc",
     "strict": true,
