@@ -41,8 +41,10 @@
   --color-base-200: oklch(98% 0 0);
   --color-base-300: oklch(95% 0 0);
   --color-base-content: oklch(21% 0.006 285.885);
-  --color-primary: oklch(45% 0.24 277.023);
-  --color-primary-content: oklch(93% 0.034 272.788);
+  /* --color-primary: oklch(45% 0.24 277.023);
+  --color-primary-content: oklch(93% 0.034 272.788);*/
+  --color-primary: #faa21b;
+  --color-primary-content: #faa21b;
   --color-secondary: oklch(65% 0.241 354.308);
   --color-secondary-content: oklch(94% 0.028 342.258);
   --color-accent: oklch(77% 0.152 181.912);
@@ -65,6 +67,42 @@
   --border: 1px;
   --depth: 1;
   --noise: 0;
+}
+
+/*
+  Europeana typography — only when europeana-light is active.
+  Page title: Montserrat SemiBold 24px / 120% / -1% tracking
+  Left menu:  Open Sans SemiBold 16px / 150%
+  Body:       Open Sans Regular 16px / 150%
+*/
+[data-theme='europeana-light'] {
+  font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+[data-theme='europeana-light'] .navbar-center > .text-lg,
+[data-theme='europeana-light'] #router-content h1 {
+  font-family: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+[data-theme='europeana-light'] ul.menu .btn,
+[data-theme='europeana-light'] ul.menu .btn .text-sm {
+  font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+[data-theme='europeana-light'] .material-symbols-rounded {
+  font-family: 'Material Symbols Rounded', sans-serif;
+  font-weight: normal;
+  letter-spacing: normal;
 }
 
 /*
