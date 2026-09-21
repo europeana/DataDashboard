@@ -29,4 +29,14 @@ export class ContractDefinitionCardComponent {
   @Output() openDetailsEvent = new EventEmitter<ContractDefinition>();
   @Output() editContractDefinitionEvent = new EventEmitter<ContractDefinition>();
   @Output() deleteContractDefinitionEvent = new EventEmitter<ContractDefinition>();
+
+  /* CORE HACK : hook for Europeana subclasses (name if present, else id) */
+  get cardTitle(): string {
+    return this.contractDefinition.id;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (description from common field) */
+  get cardDescription(): string | undefined {
+    return undefined;
+  }
 }

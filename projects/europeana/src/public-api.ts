@@ -21,12 +21,23 @@ export { EuropeanaPolicyCreateComponent } from './policies/europeana-policy-crea
 export { EuropeanaPolicyViewComponent } from './policies/europeana-policy-view.component';
 export { EuropeanaPolicyCardComponent } from './policies/europeana-policy-card.component';
 
-export { provideEuropeanaDashboard } from './provide-europeana-dashboard';
+export { provideEuropeanaDashboard } from './europeana-dashboard-provider';
 
 /* Customized contract-definition related classes */
 export { EuropeanaContractDefinitionCreateComponent } from './contract-definitions/europeana-contract-definition-create.component';
+export { EuropeanaContractDefinitionCardComponent } from './contract-definitions/europeana-contract-definition-card.component';
 export { EuropeanaContractDefinitionsViewComponent } from './contract-definitions/europeana-contract-definitions-view.component';
 
 /* Customized catalog related classes */
 export { EuropeanaCatalogCardComponent } from './catalog/europeana-catalog-card.component';
 export { EuropeanaCatalogViewComponent } from './catalog/europeana-catalog-view.component';
+export { EuropeanaContractNegotiationComponent } from './catalog/europeana-contract-negotiation.component';
+
+/* Pluggable DCAT properties field group */
+export {
+  DCAT_FIELDS,
+  DCAT_FORM_FIELDS,
+  dcatPropertyKeys,
+  EuropeanaDcatResourcePropertiesComponent,
+} from './dcat';
+export type { DcatField } from './dcat';

@@ -18,7 +18,10 @@
         <span class="material-symbols-rounded text-3xl">deployed_code_update</span>
         <span class="truncate text-wrap">{{ name }}</span>
       </div>
-      @if (participantId || version || contentType) {
+      @if (cardDescription) {
+        <p class="text-sm opacity-70 mb-3 ml-3 line-clamp-2">{{ cardDescription }}</p>
+      }
+      @if (participantId || version || contentType || cardFields.length) {
         <div class="ml-3 mb-3 grid grid-cols-[minmax(0,auto)_minmax(0,min-content)] gap-4">
           @if (participantId) {
             <div class="flex items-center">
@@ -46,6 +49,15 @@
           }
           @if (contentType) {
             <span class="truncate">{{ contentType }}</span>
+          }
+          @for (field of cardFields; track field.label) {
+            <div class="flex items-center">
+              <span class="material-symbols-rounded mr-1">{{ field.icon || 'label' }}</span>
+              <b
+                ><i>{{ field.label }}</i></b
+              >
+            </div>
+            <span class="truncate">{{ field.value }}</span>
           }
         </div>
       }

@@ -12,6 +12,7 @@ export class AuthService {
 
   private keycloak?: Keycloak;
   private fetchBridgeInstalled = false;
+  private authEnabled = false;
 
   private readonly defaultKeycloakConfig = {
     url: 'https://<default-keycloak-host>/auth',
@@ -20,7 +21,7 @@ export class AuthService {
   };
 
   async init() {
-    let runtimeKeycloakConfig: { url?: string; realm?: string; clientId?: string } = {};
+    let runtimeKeycloakConfig: AppConfig['keycloak'] = {};
 
     try {
       const appConfig = await firstValueFrom(this.http.get<AppConfig>('config/app-config.json'));
@@ -28,6 +29,15 @@ export class AuthService {
     } catch (error) {
       console.warn('[AuthService] Unable to load runtime app-config.json; using Keycloak placeholder defaults.', error);
     }
+
+    // `enabled: false` skips the startup Keycloak login screen entirely.
+    if (runtimeKeycloakConfig.enabled === false) {
+      console.log('[AuthService] Keycloak authentication disabled via app-config.json');
+      this.authEnabled = false;
+      return;
+    }
+
+    this.authEnabled = true;
 
     const keycloak = new Keycloak({
       url: runtimeKeycloakConfig.url ?? this.defaultKeycloakConfig.url,
@@ -53,6 +63,11 @@ export class AuthService {
     this.installFetchBridge();
   }
 
+  /** Whether Keycloak auth is active for this session. */
+  get enabled(): boolean {
+    return this.authEnabled;
+  }
+
   get token(): string {
     return this.keycloak?.token ?? '';
   }
@@ -66,6 +81,9 @@ export class AuthService {
   }
 
   async refreshToken() {
+    if (!this.authEnabled) {
+      return;
+    }
     await this.keycloak?.updateToken(60);
   }
 

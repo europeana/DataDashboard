@@ -1,14 +1,6 @@
 <!--
-    Copyright (c) 2025 Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V.
-
-    This program and the accompanying materials are made available under the
-    terms of the Apache License, Version 2.0 which is available at
-    https://www.apache.org/licenses/LICENSE-2.0
-
-    SPDX-License-Identifier: Apache-2.0
-
-    Contributors:
-         Fraunhofer-Gesellschaft zur Förderung der angewandten Forschung e.V. - initial API and implementation
+  Europeana policy create/edit — Name / Title / Description via pluggable fields component;
+  stored as public properties.
 -->
 
 <form
@@ -17,7 +9,7 @@
   class="grid grid-cols-1 gap-4 items-start overflow-y-auto h-full [&_label]:shrink-0"
 >
   <h1 class="text-xl text-center divider m-0">{{ formTitle }}</h1>
-  <div class="flex flex-col">
+  <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Common Fields</legend>
       <legend class="fieldset-label">ID</legend>
@@ -41,34 +33,6 @@
         }
       </label>
 
-      <!-- CORE HACK : Name / Description common fields for Europeana (showAdditionalCommonFields) -->
-      @if (showAdditionalCommonFields) {
-        <legend class="fieldset-label">Name</legend>
-        <label
-          class="input flex items-center tooltip tooltip-info tooltip-top w-full"
-          data-tip="Can be filtered by and could be used as e.g. display name"
-        >
-          <span class="material-symbols-rounded opacity-50">assignment_ind</span>
-          <input type="text" class="grow" placeholder="Name" formControlName="name" name="name" />
-          <span class="badge badge-info">Optional</span>
-        </label>
-        <legend class="fieldset-label">Description</legend>
-        <label
-          class="textarea flex items-start tooltip tooltip-info tooltip-top w-full min-h-20"
-          data-tip="Optional free-text description of the policy"
-        >
-          <span class="material-symbols-rounded opacity-50 mt-1">notes</span>
-          <textarea
-            class="grow bg-transparent border-0 outline-none resize-y min-h-16"
-            placeholder="Description"
-            formControlName="description"
-            name="description"
-            rows="3"
-          ></textarea>
-          <span class="badge badge-info">Optional</span>
-        </label>
-      }
-
       <legend class="fieldset-label">Policy-Type</legend>
       <label class="select w-full" [ngClass]="policyForm.get('policyType')?.invalid ? 'select-error' : ''">
         <span class="label">Type</span>
@@ -83,11 +47,19 @@
         <p class="fieldset-label text-error">Mandatory</p>
       }
     </fieldset>
+
+    <europeana-dcat-resource-properties
+      class="w-lg block"
+      layout="fields"
+      [fieldKeys]="policyFieldKeys"
+      [properties]="properties"
+      title="Resource common fields"
+      (propertiesChange)="properties = $event"
+    ></europeana-dcat-resource-properties>
   </div>
 
   <div class="flex flex-col [&_>*]:mb-4 [&_>*]:last:mb-0">
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
-      <!-- CORE HACK : propertiesSectionTitle hook for Europeana subclasses (e.g. rename Properties → Conditions) -->
       <legend class="fieldset-legend text-sm">{{ propertiesSectionTitle }}</legend>
       <legend class="fieldset-label">Permissions</legend>
       <div class="tooltip tooltip-info tooltip-top w-full" data-tip="Expects JSON">
@@ -130,26 +102,21 @@
       </div>
     </fieldset>
 
-    <!-- CORE HACK : public Properties section for Europeana (showPublicPropertiesSection) -->
-    @if (showPublicPropertiesSection) {
-      <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
-        <legend class="fieldset-legend text-sm">Properties</legend>
-        <lib-json-object-input
-          [object]="properties"
-          [excludeKeys]="publicPropertiesExcludeKeys"
-          (objectChange)="properties = $event"
-        >
-        </lib-json-object-input>
-      </fieldset>
-    }
+    <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
+      <legend class="fieldset-legend text-sm">Properties</legend>
+      <lib-json-object-input
+        [object]="properties"
+        [excludeKeys]="publicPropertiesExcludeKeys"
+        (objectChange)="properties = $event"
+      >
+      </lib-json-object-input>
+    </fieldset>
 
     <fieldset class="fieldset w-lg bg-base-200 border border-base-300 p-4 rounded-box">
       <legend class="fieldset-legend text-sm">Private Properties</legend>
       <lib-json-object-input
         [object]="privateProperties"
-        [excludeKeys]="
-          showAdditionalCommonFields ? ['@context', 'name', 'Name', 'description', 'Description'] : ['@context']
-        "
+        [excludeKeys]="['@context', 'name', 'Name', 'title', 'Title', 'description', 'Description']"
         (objectChange)="privateProperties = $event"
       >
       </lib-json-object-input>

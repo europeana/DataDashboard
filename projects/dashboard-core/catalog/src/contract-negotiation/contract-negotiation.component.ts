@@ -33,10 +33,14 @@ export class ContractNegotiationComponent implements OnChanges {
   private readonly catalogService = inject(CatalogService);
 
   @Input() catalogDataset!: CatalogDataset;
+  /** When false, hides the Catalog Details table (Europeana negotiate modal). */
+  @Input() showCatalogDetailsSection = true;
   @Output() negotiationRequested = new EventEmitter<IdResponse>();
 
   dataset: Record<string, JsonValue> = {};
+  distributions: Record<string, JsonValue>[] = [];
   catalog: Record<string, JsonValue> = {};
+  readonly distributionExcludeKeys = ['@context', '@type'];
   errorMsg = '';
   offerId = '';
   selectedOffer = new BehaviorSubject<string[]>(['']);
@@ -47,10 +51,12 @@ export class ContractNegotiationComponent implements OnChanges {
     }
   }
 
-  private async loadDataset() {
+  /* CORE HACK : protected for Europeana subclasses */
+  protected async loadDataset() {
     if (this.catalogDataset) {
       try {
         this.dataset = await compact(this.catalogDataset.dataset);
+        this.distributions = await this.loadDistributions(this.dataset);
         this.catalog = this.getCatalogAsRecord();
       } catch (error) {
         console.error('Error compacting dataset:', error);
@@ -99,6 +105,21 @@ export class ContractNegotiationComponent implements OnChanges {
 
       this.selectedOffer.next(offer);
     }
+  }
+
+  private async loadDistributions(dataset: Record<string, JsonValue>): Promise<Record<string, JsonValue>[]> {
+    const raw = dataset['distribution'] ?? dataset['http://www.w3.org/ns/dcat#distribution'];
+    if (!raw) {
+      return [];
+    }
+    const items = Array.isArray(raw) ? raw : [raw];
+    return Promise.all(
+      items
+        .filter(
+          (item): item is Record<string, JsonValue> => item != null && typeof item === 'object' && !Array.isArray(item),
+        )
+        .map(item => compact(item).then(compacted => compacted as Record<string, JsonValue>)),
+    );
   }
 
   private getCatalogAsRecord(): Record<string, JsonValue> {

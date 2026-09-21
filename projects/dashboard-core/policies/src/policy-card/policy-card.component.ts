@@ -38,9 +38,13 @@ export class PolicyCardComponent implements OnChanges {
   hasObligations = false;
 
   /* CORE HACK : hook for Europeana subclasses (name if present, else id) */
-   
   get cardTitle(): string {
     return this.policyDefinition?.['@id'] ?? this.policyDefinition?.id ?? '';
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (description from common field) */
+  get cardDescription(): string | undefined {
+    return undefined;
   }
 
   ngOnChanges() {

@@ -48,6 +48,7 @@ export class PolicyCreateComponent implements OnChanges {
 
   errorMsg = '';
 
+  properties: Record<string, JsonValue> = {};
   privateProperties: Record<string, JsonValue> = {};
 
   policyForm: FormGroup;
@@ -55,6 +56,8 @@ export class PolicyCreateComponent implements OnChanges {
   constructor() {
     this.policyForm = this.formBuilder.group({
       id: [''],
+      name: [''],
+      description: [''],
       policyType: new FormControl<PolicyType | undefined>(undefined, {
         validators: [Validators.required],
       }),
@@ -88,6 +91,29 @@ export class PolicyCreateComponent implements OnChanges {
     return 'Policy';
   }
 
+  /* CORE HACK : hook for Europeana subclasses (e.g. rename Properties → Conditions) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get propertiesSectionTitle(): string {
+    return 'Properties';
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (Name / Description common fields) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get showAdditionalCommonFields(): boolean {
+    return false;
+  }
+
+  /* CORE HACK : hook for Europeana subclasses (editable public Properties section) */
+  // eslint-disable-next-line @typescript-eslint/class-literal-property-style
+  get showPublicPropertiesSection(): boolean {
+    return false;
+  }
+
+  /* CORE HACK : keys omitted from the public Properties editor (common fields managed separately) */
+  get publicPropertiesExcludeKeys(): string[] {
+    return ['@context'];
+  }
+
   createPolicyDefinition(): void {
     this.submit(input => this.policyService.createPolicyDefinition(input).then(res => this.created.emit(res)));
   }
@@ -116,7 +142,7 @@ export class PolicyCreateComponent implements OnChanges {
     });
   }
 
-  /* CORE HACK : make method protected */
+  /* CORE HACK : make method protected; subclasses may enrich the payload (e.g. properties) */
   protected createPolicyInput(): PolicyDefinitionInput {
     const { id, policyType, permissionsJson, prohibitionsJson, obligationsJson } = this.policyForm.value;
 

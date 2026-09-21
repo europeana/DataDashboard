@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { AssetCardComponent } from '@eclipse-edc/dashboard-core/assets';
+import { optionalLocalValue } from '../jsonld/optional-local-value';
 
 @Component({
   selector: 'europeana-asset-card',
@@ -9,14 +10,16 @@ import { AssetCardComponent } from '@eclipse-edc/dashboard-core/assets';
   styleUrl: '../../../dashboard-core/assets/src/asset-card/asset-card.component.css',
 })
 export class EuropeanaAssetCardComponent extends AssetCardComponent {
-  /**
-   * Card title: `edc:name` when present, otherwise the asset ID.
-   */
+  /** Card title: name → title → asset id. */
   override get cardTitle(): string {
-    const name = this.asset?.properties?.optionalValue<string>('edc', 'name');
-    if (typeof name === 'string' && name.trim()) {
-      return name.trim();
+    return this.read('name') ?? this.read('title') ?? this.asset?.id ?? '';
+  }
+
+  private read(key: string): string | undefined {
+    const fromEdc = this.asset?.properties?.optionalValue<string>('edc', key);
+    if (typeof fromEdc === 'string' && fromEdc.trim()) {
+      return fromEdc.trim();
     }
-    return this.asset?.id ?? '';
+    return optionalLocalValue(this.asset?.properties as Record<string, unknown> | undefined, key);
   }
 }
