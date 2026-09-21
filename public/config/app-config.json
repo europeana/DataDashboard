@@ -2,6 +2,7 @@
   "healthCheckIntervalSeconds": 30,
   "enableUserConfig": false,
   "appTitle": "EDC Dashboard",
+  "initialTheme": "europeana-light",
   "keycloak": {
     "enabled": false,
     "url": "https://keycloak.test.eanadev.org/auth",

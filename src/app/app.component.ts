@@ -30,6 +30,7 @@ export class AppComponent implements OnInit {
 
   protected readonly themes = [
     'light',
+    'europeana-light',
     'dark',
     'dim',
     'aqua',
