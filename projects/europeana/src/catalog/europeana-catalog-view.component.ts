@@ -96,7 +96,6 @@ export class EuropeanaCatalogViewComponent extends CatalogViewComponent {
    *                   excluding keys named '@id'; otherwise, false.
    */
   private matchesDatasetProperties(dataset: Dataset, searchText: string): boolean {
-    console.log('Checking dataset properties for match:', dataset, searchText);
     return Object.entries(dataset).some(([key, value]) => {
       if (this.excludedProperties.includes(key)) {
         return false;
