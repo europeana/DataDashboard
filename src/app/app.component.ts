@@ -12,11 +12,12 @@
  *
  */
 
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, Type, inject } from '@angular/core';
 import { DashboardAppComponent, EdcConfig } from '@eclipse-edc/dashboard-core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
 import { AppConfig } from '../../projects/dashboard-core/src/lib/models/app-config';
+import { NavbarLogoComponent } from './navbar-logo/navbar-logo.component';
 
 @Component({
   selector: 'app-root',
@@ -42,6 +43,8 @@ export class AppComponent implements OnInit {
     'coffee',
     'emerald',
   ];
+  /** Logo in navbar-start (after the menu button). */
+  protected readonly navbarStartComponents: Type<unknown>[] = [NavbarLogoComponent];
   edcConfigs?: Promise<EdcConfig[]>;
   appConfig?: Promise<AppConfig>;
 
