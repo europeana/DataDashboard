@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   selector: 'app-navbar-logo',
   standalone: true,
   template: `
-    <a href="/" class="ml-2 flex items-center shrink-0" aria-label="Home">
+    <a href="/" class="flex items-center shrink-0 pl-[10px]" aria-label="Home">
       <img src="dataspace-logo.svg" alt="Home" class="h-16 w-auto" />
     </a>
   `,
