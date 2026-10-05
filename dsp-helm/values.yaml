@@ -73,6 +73,8 @@ basicAuth:
 config:
   # -- (string) Change the application title displayed in the header
   appTitle: Datasets
+  # -- (string) Browser tab / document title
+  documentTabTitle: "The common European data space for cultural heritage - Datasets"
   # -- If enabled, the user can add new connectors to the dashboard, that are stored in the local storage.
   enableUserConfig: false
   # -- Health check interval for the currently selected connector in the dashboard.

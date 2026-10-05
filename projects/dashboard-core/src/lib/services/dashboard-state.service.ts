@@ -197,17 +197,21 @@ export class DashboardStateService implements OnDestroy {
    *
    * Updates the global configuration state and, if specified, adjusts the EDC client's
    * health check interval. Also, if an initialTheme is defined in config (and no theme had
-   * been stored), it is applied.
+   * been stored), it is applied. Sets the browser tab title when documentTabTitle is set.
    *
    * @param config An object of type AppConfig containing the configuration settings:
    *  - enableUserConfig: Optional boolean flag to enable or disable user configuration.
    *  - healthCheckIntervalSeconds: Optional number representing the health check interval in seconds.
    *  - initialTheme: Optional name of the theme.
+   *  - documentTabTitle: Optional browser tab title.
    */
   public setAppConfig(config: AppConfig): void {
     this._appConfig.next(config);
     if (config.healthCheckIntervalSeconds) {
       this.edc.setHealthCheckInterval(config.healthCheckIntervalSeconds);
+    }
+    if (config.documentTabTitle?.trim()) {
+      document.title = config.documentTabTitle.trim();
     }
     const storedTheme = localStorage.getItem(this.LOCAL_STORAGE_THEME_KEY);
     if (!storedTheme && config.initialTheme) {

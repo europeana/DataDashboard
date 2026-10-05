@@ -2,6 +2,7 @@
   "healthCheckIntervalSeconds": 30,
   "enableUserConfig": false,
   "appTitle": "Datasets",
+  "documentTabTitle": "The common European data space for cultural heritage - Datasets",
   "initialTheme": "europeana-light",
   "keycloak": {
     "enabled": false,

@@ -26,7 +26,9 @@ export interface AppConfig {
   menuItems: MenuItem[];
   healthCheckIntervalSeconds?: number; // Default: 30
   enableUserConfig?: boolean; // Default: true
-  appTitle?: string; // Default 'EDC Dashboard'
+  appTitle?: string; // Default 'EDC Dashboard' — navbar header
+  /** Browser tab / document title. When set, applied on config load. */
+  documentTabTitle?: string;
   initialTheme?: string; // Default: undefined
   keycloak?: KeycloakConfig;
 }

@@ -77,6 +77,7 @@ Beside the connector configuration, there is some application configuration. The
 The [app-config.json](public/config/app-config.json) in this repository contains the default configuration.
 The following application config values exist:
 - `appTitle` (string): Set the name of the application in the header area.<br>__Default__: EDC Dashboard
+- `documentTabTitle` (string): Set the browser tab / document title. Applied when the app config is loaded.
 - `menuItems` ([MenuItem](projects/dashboard-core/src/lib/models/menu-item.ts) Array): Configure the menu items (views) of the dashboard. Set the icon, text, router path and view description (for the home view) for each item.
 - `healthCheckIntervalSeconds` (number): Sets the interval in seconds to check if the connection to the current connector is still established.<br>__Default__: `30`
 - `initialTheme` (string): Set the initial theme (for available values, see theme switcher in top right).
